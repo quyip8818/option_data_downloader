@@ -4,7 +4,7 @@ import pandas as pd
 import yfinance as yf
 
 CONTRACT_COST = 0.05
-MIN_DAY_DIFF = 1
+MIN_DAY_DIFF = 0
 
 def process_option(df, current_price, is_call):
     df.fillna(0)
@@ -22,9 +22,12 @@ def max_time_value(df, current_price):
     return sub_df['timeValue'].max()
 
 
-def process_max_time_value_df(df):
+def process_max_time_value_df(df, current_price):
     df.sort_values(by="days", inplace=True)
     df['day_value'] = (df['value'] - CONTRACT_COST)/ df['days']
+    df['value_percent'] = df['value'] / current_price
+    df['day_value_percent'] = df['day_value'] / current_price
+    df['year_value_percent'] =  np.where(df['days']  < 7, df['day_value_percent'] * 252, df['day_value_percent'] * 360)
 
 
 def save_option_data(symbol, today):
@@ -52,9 +55,9 @@ def save_option_data(symbol, today):
         put_max_time_value_df.loc[len(put_max_time_value_df)] = [diff_days, max_time_value(put_df, current_price)]
 
     with pd.ExcelWriter(f"options/{symbol}_{today.strftime("%Y_%m_%d")}.xlsx") as writer:
-        process_max_time_value_df(call_max_time_value_df)
+        process_max_time_value_df(call_max_time_value_df, current_price)
         call_max_time_value_df.to_excel(writer, sheet_name='c_all', index=False)
-        process_max_time_value_df(put_max_time_value_df)
+        process_max_time_value_df(put_max_time_value_df, current_price)
         put_max_time_value_df.to_excel(writer, sheet_name='p_all', index=False)
 
         for call_df in call_dfs:
