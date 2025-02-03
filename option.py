@@ -14,6 +14,8 @@ def process_option(df, current_price, is_call):
     df['estPrice'] = np.where(mid_price <= 0.01,df['lastPrice'], mid_price)
     df['inMoney']= (current_price - df['strike']).clip(lower=0) if is_call else (df['strike'] - current_price).clip(lower=0)
     df['timeValue'] = df['estPrice'] - df['inMoney']
+    df['timeValuePercent'] = df['timeValue'] / current_price
+    df['strikePercent'] = df['strike'] / current_price
     return df
 
 
@@ -24,10 +26,10 @@ def max_time_value(df, current_price):
 
 def process_max_time_value_df(df, current_price):
     df.sort_values(by="days", inplace=True)
-    df['day_value'] = (df['value'] - CONTRACT_COST)/ df['days']
-    df['value_percent'] = df['value'] / current_price
-    df['day_value_percent'] = df['day_value'] / current_price
-    df['year_value_percent'] =  np.where(df['days']  < 7, df['day_value_percent'] * 252, df['day_value_percent'] * 360)
+    df['dayValue'] = (df['value'] - CONTRACT_COST)/ df['days']
+    df['valuePercent'] = df['value'] / current_price
+    df['dayValuePercent'] = df['dayValue'] / current_price
+    df['yearValuePercent'] =  np.where(df['days']  < 7, df['dayValuePercent'] * 252, df['dayValuePercent'] * 360)
 
 
 def save_option_data(symbol, today):
@@ -55,12 +57,21 @@ def save_option_data(symbol, today):
         put_max_time_value_df.loc[len(put_max_time_value_df)] = [diff_days, max_time_value(put_df, current_price)]
 
     with pd.ExcelWriter(f"options/{symbol}_{today.strftime("%Y_%m_%d")}.xlsx") as writer:
+        current_price_df = pd.DataFrame({
+            'rowName': ['currentPrice'],
+            'currentPrice': [current_price],
+        })
         process_max_time_value_df(call_max_time_value_df, current_price)
-        call_max_time_value_df.to_excel(writer, sheet_name='c_all', index=False)
+        current_price_df.to_excel(writer, sheet_name='c_all', index=False, header=False, startrow=0)
+        call_max_time_value_df.to_excel(writer, sheet_name='c_all', index=False, startrow=2)
+
         process_max_time_value_df(put_max_time_value_df, current_price)
-        put_max_time_value_df.to_excel(writer, sheet_name='p_all', index=False)
+        current_price_df.to_excel(writer, sheet_name='p_all', index=False, header=False, startrow=0)
+        put_max_time_value_df.to_excel(writer, sheet_name='p_all', index=False, startrow=2)
 
         for call_df in call_dfs:
-            call_df[0].to_excel(writer, sheet_name=call_df[1], index=False)
+            current_price_df.to_excel(writer, sheet_name=call_df[1], index=False, header=False, startrow=0)
+            call_df[0].to_excel(writer, sheet_name=call_df[1], index=False, startrow=2)
         for put_df in put_dfs:
-            put_df[0].to_excel(writer, sheet_name=put_df[1], index=False)
+            current_price_df.to_excel(writer, sheet_name=put_df[1], index=False, header=False, startrow=0)
+            put_df[0].to_excel(writer, sheet_name=put_df[1], index=False, startrow=2)
