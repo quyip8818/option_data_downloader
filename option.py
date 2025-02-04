@@ -1,3 +1,4 @@
+import os
 from datetime import datetime
 import numpy as np
 import pandas as pd
@@ -56,7 +57,9 @@ def save_option_data(symbol, today):
         call_max_time_value_df.loc[len(call_max_time_value_df)] = [diff_days, max_time_value(call_df, current_price)]
         put_max_time_value_df.loc[len(put_max_time_value_df)] = [diff_days, max_time_value(put_df, current_price)]
 
-    with pd.ExcelWriter(f"options/{symbol}_{today.strftime("%Y_%m_%d")}.xlsx") as writer:
+    today_str = today.strftime("%Y_%m_%d")
+    os.makedirs(f"options/{today_str}", exist_ok=True)
+    with pd.ExcelWriter(f"options/{today_str}/{symbol}_{today_str}.xlsx") as writer:
         current_price_df = pd.DataFrame({
             'rowName': ['currentPrice'],
             'currentPrice': [current_price],
