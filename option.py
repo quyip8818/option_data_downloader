@@ -12,7 +12,7 @@ def process_option(df, current_price, is_call):
     df.drop(columns=["inTheMoney", "contractSize", "currency"], inplace=True)
     df["lastTradeDate"] = df["lastTradeDate"].dt.tz_convert("EST").dt.tz_localize(None)
     mid_price = (df['bid'] + df['ask']) / 2.0
-    df['estPrice'] = np.where(mid_price <= 0.01,df['lastPrice'], mid_price)
+    df['estPrice'] = np.maximum(df['lastPrice'], mid_price)
     df['inMoney']= (current_price - df['strike']).clip(lower=0) if is_call else (df['strike'] - current_price).clip(lower=0)
     df['timeValue'] = df['estPrice'] - df['inMoney']
     df['timeValuePercent'] = df['timeValue'] / current_price
