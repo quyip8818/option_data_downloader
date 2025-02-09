@@ -6,21 +6,26 @@ import yfinance as yf
 MIN_TIME_VALUE = 0.02
 CONTRACT_COST = 0.05
 MIN_DAY_DIFF = 0
+LAST_TRADE_DATE_FORMAT = '%m/%d/%Y %I:%M:%S'
 
+def get_est_price(ask, bid, last, last_trade_date, today):
+    diff_days = abs((today - last_trade_date.date()).days)
+    valid_last_day = diff_days == 0 if today.weekday() <= 5 else diff_days <= 2
 
-def get_est_price(ask, bid, last):
     mid = (ask + bid) / 2
-    return mid if (last > mid or last < mid) else (mid + last) / 2
+    if valid_last_day and ask >= last >= bid:
+        return (mid + last) / 2
+    else:
+        return mid
 
-
-def process_option(df_raw, current_price, is_call):
+def process_option(df_raw, current_price, is_call, today):
     df = df_raw.copy()
     df.fillna(0)
     df.drop(columns=["inTheMoney", "contractSize", "currency"], inplace=True)
     df["lastTradeDate"] = df["lastTradeDate"].dt.tz_convert("EST").dt.tz_localize(None)
 
-    df = df[(df['bid'] > 0) & (df['ask'] > 0)]
-    df['estPrice'] = df.apply(lambda row: get_est_price(row['ask'], row['bid'], row['lastPrice']), axis=1)
+    df = df[(df['bid'] > 0) & (df['ask'] > 0) & (df['lastPrice'] > 0)]
+    df['estPrice'] = df.apply(lambda row: get_est_price(row['ask'], row['bid'], row['lastPrice'], row['lastTradeDate'].to_pydatetime(), today), axis=1)
 
     df['inMoney'] = (current_price - df['strike']).clip(lower=0) if is_call else (df['strike'] - current_price).clip(
         lower=0)
@@ -106,8 +111,8 @@ def save_option_data(symbol, folder, file_name, today):
     for date_str in ticker.options:
         opt_chain = ticker.option_chain(date_str)
 
-        call_df = process_option(opt_chain.calls, current_price, True)
-        put_df = process_option(opt_chain.puts, current_price, False)
+        call_df = process_option(opt_chain.calls, current_price, True, today)
+        put_df = process_option(opt_chain.puts, current_price, False, today)
 
         date = datetime.strptime(date_str, "%Y-%m-%d").date()
         diff_days = max((date - today).days, 1)
