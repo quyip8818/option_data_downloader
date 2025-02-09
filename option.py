@@ -1,4 +1,3 @@
-import os
 from datetime import datetime
 import numpy as np
 import pandas as pd
@@ -80,7 +79,7 @@ def save_header_data(writer, sheet_name, data):
     return len(data) + 1
 
 
-def save_option_data(symbol, today):
+def save_option_data(symbol, folder, file_name, today):
     ticker = yf.Ticker(symbol)
     current_price = ticker.fast_info["lastPrice"]
 
@@ -104,23 +103,21 @@ def save_option_data(symbol, today):
         call_max_time_value_df.loc[len(call_max_time_value_df)] = [diff_days, *max_time_value(call_df, current_price)]
         put_max_time_value_df.loc[len(put_max_time_value_df)] = [diff_days, *max_time_value(put_df, current_price)]
 
-    today_str = today.strftime("%Y_%m_%d")
-    os.makedirs(f"options/{today_str}", exist_ok=True)
+    call_max_time_value_df, call_paybacks, call_ivs = process_max_time_value_df(call_max_time_value_df, current_price)
+    put_max_time_value_df, put_paybacks, put_ivs = process_max_time_value_df(put_max_time_value_df, current_price)
 
-    with pd.ExcelWriter(f"options/{today_str}/{symbol}_{today_str}.xlsx") as writer:
-        call_max_time_value_df, paybacks, ivs = process_max_time_value_df(call_max_time_value_df, current_price)
+    with pd.ExcelWriter(f"{folder}/{file_name}.xlsx") as writer:
         next_start_row = save_header_data(writer, "c_all", {
             "currentPrice": [current_price],
-            "paybacks": paybacks,
-            "ivs": ivs,
+            "paybacks": call_paybacks,
+            "ivs": call_ivs,
         })
         call_max_time_value_df.to_excel(writer, sheet_name='c_all', index=False, startrow=next_start_row)
 
-        put_max_time_value_df, paybacks, ivs = process_max_time_value_df(put_max_time_value_df, current_price)
         next_start_row = save_header_data(writer, "p_all", {
             "currentPrice": [current_price],
-            "paybacks": paybacks,
-            "ivs": ivs,
+            "paybacks": put_paybacks,
+            "ivs": put_ivs,
         })
         put_max_time_value_df.to_excel(writer, sheet_name='p_all', index=False, startrow=next_start_row)
 
@@ -134,3 +131,5 @@ def save_option_data(symbol, today):
         for put_df in put_dfs:
             current_price_df.to_excel(writer, sheet_name=put_df[1], index=False, header=False, startrow=0)
             put_df[0].to_excel(writer, sheet_name=put_df[1], index=False, startrow=2)
+
+    return [call_paybacks, call_ivs, put_paybacks, put_ivs]
