@@ -8,12 +8,20 @@ CONTRACT_COST = 0.05
 MIN_DAY_DIFF = 0
 
 
-def process_option(df, current_price, is_call):
+def get_est_price(ask, bid, last):
+    mid = (ask + bid) / 2
+    return mid if (last > mid or last < mid) else (mid + last) / 2
+
+
+def process_option(df_raw, current_price, is_call):
+    df = df_raw.copy()
     df.fillna(0)
     df.drop(columns=["inTheMoney", "contractSize", "currency"], inplace=True)
     df["lastTradeDate"] = df["lastTradeDate"].dt.tz_convert("EST").dt.tz_localize(None)
-    mid_price = (df['bid'] + df['ask']) / 2.0
-    df['estPrice'] = np.maximum(df['lastPrice'], mid_price)
+
+    df = df[(df['bid'] > 0) & (df['ask'] > 0)]
+    df['estPrice'] = df.apply(lambda row: get_est_price(row['ask'], row['bid'], row['lastPrice']), axis=1)
+
     df['inMoney'] = (current_price - df['strike']).clip(lower=0) if is_call else (df['strike'] - current_price).clip(
         lower=0)
     df['timeValue'] = df['estPrice'] - df['inMoney']
