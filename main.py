@@ -22,12 +22,12 @@ with open(file_name, "a", newline="", encoding="utf-8") as csvfile:
     writer = csv.writer(csvfile)
     if is_first_run:
         writer.writerow(
-            ['symbol', 'c_pb_w', 'c_week_valPct', 'c_max_valPct', 'c_iv_r', 'c_week_iv', 'c_max_iv',
-             'c_vol_r', 'c_week_vol', 'c_max_vol', 'c_oi_r', 'c_week_oi', 'c_max_oi'
+            ['symbol',
+             'c_pb_w', 'c_week_valPct', 'c_max_valPct', 'c_iv_r', 'c_week_iv', 'c_max_iv',
+             'c_vol_r', 'c_week_vol', 'c_max_vol', 'c_oi_r', 'c_week_oi', 'c_max_oi',
              'p_pb_w', 'p_week_valPct', 'p_max_valPct', 'p_iv_r', 'p_week_iv', 'p_max_iv',
              'p_vol_r', 'p_week_vol', 'p_max_vol', 'p_oi_r', 'p_week_oi', 'p_max_oi'])
         symbols_set = set()
-
     else:
         df = pd.read_csv(file_name)
         symbols_set = set(df['symbol'])
