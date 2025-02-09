@@ -3,6 +3,7 @@ import numpy as np
 import pandas as pd
 import yfinance as yf
 
+MIN_TIME_VALUE = 0.02
 CONTRACT_COST = 0.05
 MIN_DAY_DIFF = 0
 
@@ -26,7 +27,7 @@ def process_option(df_raw, current_price, is_call):
     df['timeValue'] = df['estPrice'] - df['inMoney']
     df['timeValuePercent'] = df['timeValue'] / current_price
     df['strikePercent'] = df['strike'] / current_price
-    return df
+    return df[df['timeValue'] > MIN_TIME_VALUE]
 
 
 def max_time_value(df, current_price):

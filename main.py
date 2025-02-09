@@ -1,14 +1,15 @@
 import csv
 import datetime
 import os
+import time
 
 import pandas as pd
 
 from option import save_option_data
 from symbols import Symbols
 
-today = datetime.date(2025, 2, 7)
-# today = datetime.date.today()
+# today = datetime.date(2025, 2, 7)
+today = datetime.date.today()
 
 today_str = today.strftime("%Y_%m_%d")
 folder = f"options/{today_str}"
@@ -28,12 +29,13 @@ with open(file_name, "a", newline="", encoding="utf-8") as csvfile:
         df = pd.read_csv(file_name)
         symbols_set = set(df['symbol'])
 
-    for symbol in Symbols:
+    for idx, symbol in enumerate(Symbols):
         if symbol in symbols_set:
             continue
-        print(f'processing {symbol}')
+        print(f'processing {idx}: {symbol}')
         [call_paybacks, call_ivs, put_paybacks, put_ivs] = save_option_data(symbol, folder, f"{symbol}_{today_str}",
                                                                             today)
         summary_row = [symbol, *call_paybacks, *call_ivs, *put_paybacks, *put_ivs]
         writer.writerow(summary_row)
         csvfile.flush()
+        time.sleep(1)
