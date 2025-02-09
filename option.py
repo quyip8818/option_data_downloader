@@ -28,12 +28,20 @@ def max_time_value(df, current_price):
     df2 = df2.sort_values(['price_diff'], ascending=[True]).head(3)
     return df2['timeValue'].max()
 
-def process_max_time_value_df(df, current_price):
+def process_max_time_value_df(df_raw, current_price):
+    df = df_raw.copy()
     df['dayValue'] = (df['value'] - CONTRACT_COST) / df['days']
     df['valuePercent'] = df['value'] / current_price
     df['dayValuePercent'] = df['dayValue'] / current_price
     df['yearValuePercent'] = np.where(df['days'] < 7, df['dayValuePercent'] * 252, df['dayValuePercent'] * 360)
-    df = df[['days', 'valuePercent', 'dayValuePercent', 'yearValuePercent', 'value']]
+
+    df['valPct'] = df['valuePercent'].apply(lambda x: f"{x:.2%}")
+    df['dayValPct'] = df['dayValuePercent'].apply(lambda x: f"{x:.2%}")
+    df['yearValPct'] = df['yearValuePercent'].apply(lambda x: f"{x:.2%}")
+    df['val'] = df['value'].apply(lambda x: f"{x:.3f}")
+    df['x'] = ''
+    df = df[['days', 'valPct', 'dayValPct', 'yearValPct', 'val', 'x', 'valuePercent', 'dayValuePercent', 'yearValuePercent', 'value']]
+
     return df.sort_values(by="days")
 
 
