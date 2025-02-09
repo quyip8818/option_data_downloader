@@ -33,11 +33,11 @@ def process_option(df_raw, current_price, is_call):
 def max_time_value(df, current_price):
     if df.empty:
         return np.nan, np.nan
-    df2 = df[['strike', 'timeValue', 'impliedVolatility']].copy()
+    df2 = df[['strike', 'timeValue', 'impliedVolatility', 'volume', 'openInterest']].copy()
     df2['price_diff'] = abs(df2['strike'] - current_price)
     df2 = df2.sort_values(['price_diff'], ascending=[True]).head(3)
     top_row = df2.sort_values(['timeValue'], ascending=[False]).iloc[0]
-    return top_row['timeValue'], top_row['impliedVolatility']
+    return top_row['timeValue'], top_row['impliedVolatility'], top_row['volume'], top_row['impliedVolatility']
 
 
 def process_max_time_value_df(df_raw, current_price):
@@ -52,10 +52,10 @@ def process_max_time_value_df(df_raw, current_price):
     df['yearValPct'] = df['yearValuePercent'].apply(lambda x: f"{x:.2%}")
     df['val'] = df['value'].apply(lambda x: f"{x:.3f}")
     df['IV'] = df['impliedVolatility'].apply(lambda x: f"{x:.3f}")
-    df['x'] = ''
+    df[' '] = ''
     df = df[
-        ['days', 'valPct', 'dayValPct', 'yearValPct', 'val', 'IV', 'x', 'valuePercent', 'dayValuePercent',
-         'yearValuePercent', 'value', 'impliedVolatility']]
+        ['days', 'valPct', 'dayValPct', 'yearValPct', 'val', 'IV', 'volume', 'openInterest',' ', 'valuePercent',
+         'dayValuePercent', 'yearValuePercent', 'value', 'impliedVolatility']]
 
     if (df['days'] == 7).any():
         week_row = df[df['days'] == 7].iloc[0]
@@ -75,12 +75,22 @@ def process_max_time_value_df(df_raw, current_price):
     iv_ratio = max_day_row['impliedVolatility'] / week_row['impliedVolatility'] \
         if max_day_row['impliedVolatility'].any() and week_row['impliedVolatility'].any() else ''
 
-    return df.sort_values(by="days"), [payback_weeks, week_row['valPct'], max_day_row['valPct']], [iv_ratio, week_row['impliedVolatility'], max_day_row['impliedVolatility']]
+    volume_ratio = max_day_row['volume'] / week_row['volume'] \
+        if max_day_row['volume'].any() and week_row['volume'].any() else ''
+
+    open_interest_ratio = max_day_row['openInterest'] / week_row['openInterest'] \
+        if max_day_row['openInterest'].any() and week_row['openInterest'].any() else ''
+
+    return (df.sort_values(by="days"),
+            [payback_weeks, week_row['valPct'], max_day_row['valPct']],
+            [iv_ratio, week_row['impliedVolatility'], max_day_row['impliedVolatility']],
+            [volume_ratio, week_row['volume'], max_day_row['volume']],
+            [open_interest_ratio, week_row['openInterest'], max_day_row['openInterest']],
+        )
 
 
 def save_header_data(writer, sheet_name, data):
-    pd.DataFrame.from_dict(data, orient="index").to_excel(writer, sheet_name=sheet_name, index=True, header=False,
-                                                          startrow=0)
+    pd.DataFrame.from_dict(data, orient="index").to_excel(writer, sheet_name=sheet_name, index=True, header=False, startrow=0)
     return len(data) + 1
 
 
@@ -90,8 +100,8 @@ def save_option_data(symbol, folder, file_name, today):
 
     call_dfs = []
     put_dfs = []
-    call_max_time_value_df = pd.DataFrame(columns=["days", "value", "impliedVolatility"])
-    put_max_time_value_df = pd.DataFrame(columns=["days", "value", "impliedVolatility"])
+    call_max_time_value_df = pd.DataFrame(columns=["days", "value", "impliedVolatility", 'volume', 'openInterest'])
+    put_max_time_value_df = pd.DataFrame(columns=["days", "value", "impliedVolatility", 'volume', 'openInterest'])
 
     for date_str in ticker.options:
         opt_chain = ticker.option_chain(date_str)
@@ -108,14 +118,16 @@ def save_option_data(symbol, folder, file_name, today):
         call_max_time_value_df.loc[len(call_max_time_value_df)] = [diff_days, *max_time_value(call_df, current_price)]
         put_max_time_value_df.loc[len(put_max_time_value_df)] = [diff_days, *max_time_value(put_df, current_price)]
 
-    call_max_time_value_df, call_paybacks, call_ivs = process_max_time_value_df(call_max_time_value_df, current_price)
-    put_max_time_value_df, put_paybacks, put_ivs = process_max_time_value_df(put_max_time_value_df, current_price)
+    call_max_time_value_df, call_paybacks, call_ivs, call_volumes, call_open_interest = process_max_time_value_df(call_max_time_value_df, current_price)
+    put_max_time_value_df, put_paybacks, put_ivs, put_volumes, put_open_interest = process_max_time_value_df(put_max_time_value_df, current_price)
 
     with pd.ExcelWriter(f"{folder}/{file_name}.xlsx") as writer:
         next_start_row = save_header_data(writer, "c_all", {
             "currentPrice": [current_price],
             "paybacks": call_paybacks,
             "ivs": call_ivs,
+            "volumes": call_volumes,
+            "open_interest": call_open_interest,
         })
         call_max_time_value_df.to_excel(writer, sheet_name='c_all', index=False, startrow=next_start_row)
 
@@ -123,6 +135,8 @@ def save_option_data(symbol, folder, file_name, today):
             "currentPrice": [current_price],
             "paybacks": put_paybacks,
             "ivs": put_ivs,
+            "volumes": put_volumes,
+            "open_interest": put_open_interest,
         })
         put_max_time_value_df.to_excel(writer, sheet_name='p_all', index=False, startrow=next_start_row)
 
@@ -137,4 +151,4 @@ def save_option_data(symbol, folder, file_name, today):
             current_price_df.to_excel(writer, sheet_name=put_df[1], index=False, header=False, startrow=0)
             put_df[0].to_excel(writer, sheet_name=put_df[1], index=False, startrow=2)
 
-    return [call_paybacks, call_ivs, put_paybacks, put_ivs]
+    return [call_paybacks, call_ivs, call_volumes, call_open_interest, put_paybacks, put_ivs, put_volumes, put_open_interest]
