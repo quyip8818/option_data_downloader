@@ -30,11 +30,13 @@ def process_option(df_raw, current_price, is_call):
 
 
 def max_time_value(df, current_price):
+    if df.empty:
+        return np.nan, np.nan
     df2 = df[['strike', 'timeValue', 'impliedVolatility']].copy()
     df2['price_diff'] = abs(df2['strike'] - current_price)
     df2 = df2.sort_values(['price_diff'], ascending=[True]).head(3)
-    df2 = df2.sort_values(['timeValue'], ascending=[False]).head(1)
-    return float(df2['timeValue'].item()), float(df2['impliedVolatility'].item())
+    top_row = df2.sort_values(['timeValue'], ascending=[False]).iloc[0]
+    return top_row['timeValue'], top_row['impliedVolatility']
 
 
 def process_max_time_value_df(df_raw, current_price):
@@ -60,8 +62,10 @@ def process_max_time_value_df(df_raw, current_price):
         week_row = df[df['days'] == 6].iloc[0]
     elif (df['days'] == 5).any():
         week_row = df[df['days'] == 5].iloc[0]
-    else:
+    elif (df['days'] == 4).any():
         week_row = df[df['days'] == 4].iloc[0]
+    else:
+        return df.sort_values(by="days"), ['', '', ''], ['', '', '']
 
     max_day_row = df.loc[df['days'].idxmax()]
     payback_weeks = max_day_row['value'] / week_row['value'] \
