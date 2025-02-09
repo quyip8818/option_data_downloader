@@ -65,10 +65,13 @@ def process_max_time_value_df(df_raw, current_price):
         week_row = df[df['days'] == 4].iloc[0]
 
     max_day_row = df.loc[df['days'].idxmax()]
-    payback_weeks = max_day_row['value'] / week_row['value'] if max_day_row['value'].any() and week_row[
-        'value'].any() else ''
+    payback_weeks = max_day_row['value'] / week_row['value'] \
+        if max_day_row['value'].any() and week_row['value'].any() else ''
 
-    return df.sort_values(by="days"), [payback_weeks, week_row['valPct'], max_day_row['valPct']]
+    iv_ratio = max_day_row['impliedVolatility'] / week_row['impliedVolatility'] \
+        if max_day_row['impliedVolatility'].any() and week_row['impliedVolatility'].any() else ''
+
+    return df.sort_values(by="days"), [payback_weeks, week_row['valPct'], max_day_row['valPct']], [iv_ratio, week_row['impliedVolatility'], max_day_row['impliedVolatility']]
 
 
 def save_header_data(writer, sheet_name, data):
@@ -105,17 +108,19 @@ def save_option_data(symbol, today):
     os.makedirs(f"options/{today_str}", exist_ok=True)
 
     with pd.ExcelWriter(f"options/{today_str}/{symbol}_{today_str}.xlsx") as writer:
-        call_max_time_value_df, paybacks = process_max_time_value_df(call_max_time_value_df, current_price)
+        call_max_time_value_df, paybacks, ivs = process_max_time_value_df(call_max_time_value_df, current_price)
         next_start_row = save_header_data(writer, "c_all", {
             "currentPrice": [current_price],
-            "paybacks": paybacks
+            "paybacks": paybacks,
+            "ivs": ivs,
         })
         call_max_time_value_df.to_excel(writer, sheet_name='c_all', index=False, startrow=next_start_row)
 
-        put_max_time_value_df, paybacks = process_max_time_value_df(put_max_time_value_df, current_price)
+        put_max_time_value_df, paybacks, ivs = process_max_time_value_df(put_max_time_value_df, current_price)
         next_start_row = save_header_data(writer, "p_all", {
             "currentPrice": [current_price],
-            "paybacks": paybacks
+            "paybacks": paybacks,
+            "ivs": ivs,
         })
         put_max_time_value_df.to_excel(writer, sheet_name='p_all', index=False, startrow=next_start_row)
 
