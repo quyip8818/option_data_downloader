@@ -7,14 +7,14 @@ import pandas as pd
 from option import save_option_data
 from symbols import Symbols
 
-# today = datetime.date(2025, 2, 7)
-today = datetime.date.today()
+today = datetime.date(2025, 2, 7)
+# today = datetime.date.today()
 
 today_str = today.strftime("%Y_%m_%d")
 folder = f"options/{today_str}"
 os.makedirs(folder, exist_ok=True)
 
-file_name = f"{folder}/summary.csv"
+file_name = f"{folder}/AAA_summary.csv"
 is_first_run = not os.path.exists(file_name)
 
 with open(file_name, "a", newline="", encoding="utf-8") as csvfile:
