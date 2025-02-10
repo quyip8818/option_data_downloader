@@ -76,7 +76,7 @@ def process_max_time_value_df(df_raw, current_price):
     elif (df['days'] == 4).any():
         week_row = df[df['days'] == 4].iloc[0]
     else:
-        return df.sort_values(by="days"), ['', '', ''], ['', '', '']
+        return df.sort_values(by="days"), ['', '', ''], ['', '', ''], ['', '', ''], ['', '', '']
 
     max_day_row = df.loc[df['days'].idxmax()]
     payback_weeks = max_day_row['value'] / week_row['value'] \
