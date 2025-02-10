@@ -42,11 +42,15 @@ def process_option(df_raw, current_price, is_call, today):
 
 def get_max_time_value(df, current_price):
     if df.empty:
-        return np.nan, np.nan, np.nan, np.nan
-    df2 = df[['strike', 'timeValue', 'impliedVolatility', 'volume', 'openInterest']].copy()
+        return np.nan, np.nan, np.nan, np.nan, np.nan
+    df2 = df[['strike', 'timeValue', 'impliedVolatility', 'volume', 'openInterest', 'bid', 'ask']].copy()
     df2['price_diff'] = abs(df2['strike'] - current_price)
     top_row = df2.sort_values(['price_diff'], ascending=[True]).iloc[0]
-    return float(top_row['timeValue']), float(top_row['impliedVolatility']), float(top_row['volume']), float(top_row['openInterest'])
+    return (float(top_row['timeValue']),
+            float(top_row['impliedVolatility']),
+            float(top_row['volume']),
+            float(top_row['openInterest']),
+            round(float(top_row['ask']) - float(top_row['bid']), 2))
 
 
 def process_max_time_value_df(df_raw, current_price):
@@ -63,8 +67,8 @@ def process_max_time_value_df(df_raw, current_price):
     df['IV'] = df['impliedVolatility'].apply(lambda x: f"{x:.3f}")
     df[' '] = ''
     df = df[
-        ['days', 'valPct', 'dayValPct', 'yearValPct', 'val', 'IV', 'volume', 'openInterest',' ', 'valuePercent',
-         'dayValuePercent', 'yearValuePercent', 'value', 'impliedVolatility']]
+        ['days', 'valPct', 'dayValPct', 'yearValPct', 'val', 'IV', 'volume', 'openInterest', 'bidAskDiff', ' ',
+         'valuePercent', 'dayValuePercent', 'yearValuePercent', 'value', 'impliedVolatility']]
 
     if (df['days'] == 7).any():
         week_row = df[df['days'] == 7].iloc[0]
@@ -95,6 +99,7 @@ def process_max_time_value_df(df_raw, current_price):
             [iv_ratio, week_row['impliedVolatility'], max_day_row['impliedVolatility']],
             [volume_ratio, week_row['volume'], max_day_row['volume']],
             [open_interest_ratio, week_row['openInterest'], max_day_row['openInterest']],
+            ['', week_row['bidAskDiff'], max_day_row['bidAskDiff']],
         )
 
 
@@ -109,8 +114,8 @@ def process_option_data(symbol, folder, file_name, today):
 
     call_dfs = []
     put_dfs = []
-    call_max_time_value_df = pd.DataFrame(columns=["days", "value", "impliedVolatility", 'volume', 'openInterest'])
-    put_max_time_value_df = pd.DataFrame(columns=["days", "value", "impliedVolatility", 'volume', 'openInterest'])
+    call_max_time_value_df = pd.DataFrame(columns=["days", "value", "impliedVolatility", 'volume', 'openInterest', 'bidAskDiff'])
+    put_max_time_value_df = pd.DataFrame(columns=["days", "value", "impliedVolatility", 'volume', 'openInterest', 'bidAskDiff'])
 
     for date_str in ticker.options:
         opt_chain = ticker.option_chain(date_str)
@@ -130,8 +135,8 @@ def process_option_data(symbol, folder, file_name, today):
         put_max_time_value = get_max_time_value(put_df, current_price)
         put_max_time_value_df.loc[len(put_max_time_value_df)] = [diff_days, *put_max_time_value]
 
-    call_max_time_value_df, call_paybacks, call_ivs, call_volumes, call_open_interest = process_max_time_value_df(call_max_time_value_df, current_price)
-    put_max_time_value_df, put_paybacks, put_ivs, put_volumes, put_open_interest = process_max_time_value_df(put_max_time_value_df, current_price)
+    call_max_time_value_df, call_paybacks, call_ivs, call_volumes, call_open_interest, call_bid_ask_diff = process_max_time_value_df(call_max_time_value_df, current_price)
+    put_max_time_value_df, put_paybacks, put_ivs, put_volumes, put_open_interest, put_bid_ask_diff = process_max_time_value_df(put_max_time_value_df, current_price)
 
     with pd.ExcelWriter(f"{folder}/{file_name}.xlsx") as writer:
         next_start_row = process_header_data(writer, "c_all", {
@@ -140,6 +145,7 @@ def process_option_data(symbol, folder, file_name, today):
             "ivs": call_ivs,
             "volumes": call_volumes,
             "open_interest": call_open_interest,
+            "bid_ask_diff": call_bid_ask_diff,
         })
         call_max_time_value_df.to_excel(writer, sheet_name='c_all', index=False, startrow=next_start_row)
 
@@ -149,6 +155,7 @@ def process_option_data(symbol, folder, file_name, today):
             "ivs": put_ivs,
             "volumes": put_volumes,
             "open_interest": put_open_interest,
+            "bid_ask_diff": put_bid_ask_diff,
         })
         put_max_time_value_df.to_excel(writer, sheet_name='p_all', index=False, startrow=next_start_row)
 
@@ -163,4 +170,4 @@ def process_option_data(symbol, folder, file_name, today):
             current_price_df.to_excel(writer, sheet_name=put_df[1], index=False, header=False, startrow=0)
             put_df[0].to_excel(writer, sheet_name=put_df[1], index=False, startrow=2)
 
-    return [call_paybacks, call_ivs, call_volumes, call_open_interest, put_paybacks, put_ivs, put_volumes, put_open_interest]
+    return [call_paybacks, call_ivs, call_volumes, call_open_interest, call_bid_ask_diff, put_paybacks, put_ivs, put_volumes, put_open_interest, put_bid_ask_diff ]
