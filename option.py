@@ -40,14 +40,13 @@ def process_option(df_raw, current_price, is_call, today):
     return df[df['timeValue'] > MIN_TIME_VALUE]
 
 
-def max_time_value(df, current_price):
+def get_max_time_value(df, current_price):
     if df.empty:
         return np.nan, np.nan, np.nan, np.nan
     df2 = df[['strike', 'timeValue', 'impliedVolatility', 'volume', 'openInterest']].copy()
     df2['price_diff'] = abs(df2['strike'] - current_price)
-    df2 = df2.sort_values(['price_diff'], ascending=[True]).head(3)
-    top_row = df2.sort_values(['timeValue'], ascending=[False]).iloc[0]
-    return float(top_row['timeValue']), float(top_row['impliedVolatility']), float(top_row['volume']), float(top_row['impliedVolatility'])
+    top_row = df2.sort_values(['price_diff'], ascending=[True]).iloc[0]
+    return float(top_row['timeValue']), float(top_row['impliedVolatility']), float(top_row['volume']), float(top_row['openInterest'])
 
 
 def process_max_time_value_df(df_raw, current_price):
@@ -125,10 +124,10 @@ def process_option_data(symbol, folder, file_name, today):
         call_dfs.append([call_df, f"c_{diff_days}"])
         put_dfs.append([put_df, f"p_{diff_days}"])
 
-        call_max_time_value = max_time_value(call_df, current_price)
+        call_max_time_value = get_max_time_value(call_df, current_price)
         call_max_time_value_df.loc[len(call_max_time_value_df)] = [diff_days, *call_max_time_value]
 
-        put_max_time_value = max_time_value(put_df, current_price)
+        put_max_time_value = get_max_time_value(put_df, current_price)
         put_max_time_value_df.loc[len(put_max_time_value_df)] = [diff_days, *put_max_time_value]
 
     call_max_time_value_df, call_paybacks, call_ivs, call_volumes, call_open_interest = process_max_time_value_df(call_max_time_value_df, current_price)
