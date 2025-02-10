@@ -99,12 +99,12 @@ def process_max_time_value_df(df_raw, current_price):
         )
 
 
-def save_header_data(writer, sheet_name, data):
+def process_header_data(writer, sheet_name, data):
     pd.DataFrame.from_dict(data, orient="index").to_excel(writer, sheet_name=sheet_name, index=True, header=False, startrow=0)
     return len(data) + 1
 
 
-def save_option_data(symbol, folder, file_name, today):
+def process_option_data(symbol, folder, file_name, today):
     ticker = yf.Ticker(symbol)
     current_price = ticker.fast_info["lastPrice"]
 
@@ -135,7 +135,7 @@ def save_option_data(symbol, folder, file_name, today):
     put_max_time_value_df, put_paybacks, put_ivs, put_volumes, put_open_interest = process_max_time_value_df(put_max_time_value_df, current_price)
 
     with pd.ExcelWriter(f"{folder}/{file_name}.xlsx") as writer:
-        next_start_row = save_header_data(writer, "c_all", {
+        next_start_row = process_header_data(writer, "c_all", {
             "currentPrice": [current_price],
             "paybacks": call_paybacks,
             "ivs": call_ivs,
@@ -144,7 +144,7 @@ def save_option_data(symbol, folder, file_name, today):
         })
         call_max_time_value_df.to_excel(writer, sheet_name='c_all', index=False, startrow=next_start_row)
 
-        next_start_row = save_header_data(writer, "p_all", {
+        next_start_row = process_header_data(writer, "p_all", {
             "currentPrice": [current_price],
             "paybacks": put_paybacks,
             "ivs": put_ivs,
