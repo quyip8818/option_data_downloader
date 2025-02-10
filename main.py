@@ -7,8 +7,8 @@ import time
 from option import process_option_data
 from symbols import Symbols
 
-today = datetime.date(2025, 2, 7)
-# today = datetime.date.today()
+# today = datetime.date(2025, 2, 7)
+today = datetime.date.today()
 
 today_str = today.strftime("%Y_%m_%d")
 folder = f"options/{today_str}"
