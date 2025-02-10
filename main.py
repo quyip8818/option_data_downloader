@@ -1,11 +1,10 @@
 import csv
 import datetime
 import os
+import pandas as pd
 import time
 
-import pandas as pd
-
-from option import save_option_data
+from option import process_option_data
 from symbols import Symbols
 
 today = datetime.date(2025, 2, 7)
@@ -37,7 +36,7 @@ with open(file_name, "a", newline="", encoding="utf-8") as csvfile:
             continue
         print(f'processing {idx}: {symbol}')
         [call_paybacks, call_ivs, call_volumes, call_open_interest, put_paybacks, put_ivs, put_volumes,
-         put_open_interest] = save_option_data(symbol, folder, f"{symbol}_{today_str}", today)
+         put_open_interest] = process_option_data(symbol, folder, f"{symbol}_{today_str}", today)
 
         summary_row = [symbol, *call_paybacks, *call_ivs, *call_volumes, *call_open_interest, '|',*put_paybacks, *put_ivs, *put_volumes, *put_open_interest]
         writer.writerow(summary_row)
