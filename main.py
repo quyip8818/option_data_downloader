@@ -42,4 +42,4 @@ with open(file_name, "a", newline="", encoding="utf-8") as csvfile:
                        '|',*put_paybacks, *put_ivs, *put_volumes, *put_open_interest, put_bid_ask_diff[1], put_bid_ask_diff[2]]
         writer.writerow(summary_row)
         csvfile.flush()
-        time.sleep(1)
+        time.sleep(2)
