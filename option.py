@@ -168,4 +168,4 @@ def process_option_data(symbol, folder, file_name, today):
             current_price_df.to_excel(writer, sheet_name=put_df[1], index=False, header=False, startrow=0)
             put_df[0].to_excel(writer, sheet_name=put_df[1], index=False, startrow=2)
 
-    return [call_paybacks, call_ivs, call_volumes, call_open_interest, call_bid_ask_diff, put_paybacks, put_ivs, put_volumes, put_open_interest, put_bid_ask_diff ]
+    return [current_price, call_paybacks, call_ivs, call_volumes, call_open_interest, call_bid_ask_diff, put_paybacks, put_ivs, put_volumes, put_open_interest, put_bid_ask_diff ]
