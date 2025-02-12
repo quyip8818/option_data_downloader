@@ -53,6 +53,7 @@ def get_max_time_value(df, current_price):
             round(float(top_row['ask']) - float(top_row['bid']), 2))
 
 
+MAX_TIME_VALUE_DAY_OFFSET_ORDER = [7, 6, 5, 4, 8, 9, 10, 11, 12, 13, 14, 15]
 def process_max_time_value_df(df_raw, current_price):
     df = df_raw.copy()
     df['dayValue'] = (df['value'] - CONTRACT_COST) / df['days']
@@ -70,15 +71,12 @@ def process_max_time_value_df(df_raw, current_price):
         ['days', 'valPct', 'dayValPct', 'yearValPct', 'val', 'IV', 'volume', 'openInterest', 'bidAskDiff', ' ',
          'valuePercent', 'dayValuePercent', 'yearValuePercent', 'value', 'impliedVolatility']]
 
-    if (df['days'] == 7).any():
-        week_row = df[df['days'] == 7].iloc[0]
-    elif (df['days'] == 6).any():
-        week_row = df[df['days'] == 6].iloc[0]
-    elif (df['days'] == 5).any():
-        week_row = df[df['days'] == 5].iloc[0]
-    elif (df['days'] == 4).any():
-        week_row = df[df['days'] == 4].iloc[0]
-    else:
+    week_row = None
+    for day_offset in MAX_TIME_VALUE_DAY_OFFSET_ORDER:
+        if (df['days'] == day_offset).any():
+            week_row = df[df['days'] == day_offset].iloc[0]
+            break
+    if week_row is None:
         return df.sort_values(by="days"), ['', '', ''], ['', '', ''], ['', '', ''], ['', '', ''], ['', '', '']
 
     max_day_row = df.loc[df['days'].idxmax()]
