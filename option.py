@@ -3,6 +3,8 @@ import numpy as np
 import pandas as pd
 import yfinance as yf
 
+from utils import round_num
+
 MIN_TIME_VALUE = 0.05
 CONTRACT_COST = 0.05
 MIN_DAY_DIFF = 0
@@ -93,10 +95,10 @@ def process_max_time_value_df(df_raw, current_price):
         if max_day_row['openInterest'].any() and week_row['openInterest'].any() else ''
 
     return (df.sort_values(by="days"),
-            [payback_weeks, week_row['valPct'], max_day_row['valPct']],
-            [iv_ratio, week_row['impliedVolatility'], max_day_row['impliedVolatility']],
-            [volume_ratio, week_row['volume'], max_day_row['volume']],
-            [open_interest_ratio, week_row['openInterest'], max_day_row['openInterest']],
+            [round_num(payback_weeks, 2), week_row['valPct'], max_day_row['valPct']],
+            [round_num(iv_ratio, 2), round_num(week_row['impliedVolatility'], 2), round_num(max_day_row['impliedVolatility'], 2)],
+            [round_num(volume_ratio, 2), week_row['volume'], max_day_row['volume']],
+            [round_num(open_interest_ratio, 2), week_row['openInterest'], max_day_row['openInterest']],
             ['', week_row['bidAskDiff'], max_day_row['bidAskDiff']],
         )
 

@@ -7,6 +7,8 @@ import time
 from option import process_option_data
 from symbols import Symbols
 
+SKIP_SYMBOL = {'BX'}
+
 # today = datetime.date(2025, 2, 7)
 today = datetime.date.today()
 
@@ -32,7 +34,7 @@ with open(file_name, "a", newline="", encoding="utf-8") as csvfile:
         symbols_set = set(df['symbol'])
 
     for idx, symbol in enumerate(Symbols):
-        if symbol in symbols_set:
+        if symbol in symbols_set or symbol in SKIP_SYMBOL:
             continue
         print(f'processing {idx}: {symbol}')
         [current_price, call_paybacks, call_ivs, call_volumes, call_open_interest, call_bid_ask_diff, put_paybacks, put_ivs, put_volumes,
