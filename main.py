@@ -7,7 +7,7 @@ import time
 from option import process_option_data
 from symbols import Symbols
 
-SKIP_SYMBOL = {'BX'}
+SKIP_SYMBOL = {}
 
 # today = datetime.date(2025, 2, 7)
 today = datetime.date.today()
@@ -23,7 +23,7 @@ with open(file_name, "a", newline="", encoding="utf-8") as csvfile:
     writer = csv.writer(csvfile)
     if is_first_run:
         writer.writerow(
-            ['symbol', 'price',
+            ['symbol', 'next_earnings_days', 'price',
              'c_pb_w', 'c_week_valPct', 'c_max_valPct', 'c_iv_r', 'c_week_iv', 'c_max_iv',
              'c_vol_r', 'c_week_vol', 'c_max_vol', 'c_oi_r', 'c_week_oi', 'c_max_oi', 'c_week_ba_diff', 'c_max_ba_diff',
              '|', 'p_pb_w', 'p_week_valPct', 'p_max_valPct', 'p_iv_r', 'p_week_iv', 'p_max_iv',
@@ -37,10 +37,11 @@ with open(file_name, "a", newline="", encoding="utf-8") as csvfile:
         if symbol in symbols_set or symbol in SKIP_SYMBOL:
             continue
         print(f'processing {idx}: {symbol}')
-        [current_price, call_paybacks, call_ivs, call_volumes, call_open_interest, call_bid_ask_diff, put_paybacks, put_ivs, put_volumes,
+        [next_earnings_date, current_price, call_paybacks, call_ivs, call_volumes, call_open_interest, call_bid_ask_diff, put_paybacks, put_ivs, put_volumes,
          put_open_interest, put_bid_ask_diff] = process_option_data(symbol, folder, f"{symbol}_{today_str}", today)
 
-        summary_row = [symbol, current_price, *call_paybacks, *call_ivs, *call_volumes, *call_open_interest, call_bid_ask_diff[1], call_bid_ask_diff[2],
+        next_earnings_days = '' if pd.isna(next_earnings_date) else (next_earnings_date.date() - today).days
+        summary_row = [symbol, next_earnings_days, current_price, *call_paybacks, *call_ivs, *call_volumes, *call_open_interest, call_bid_ask_diff[1], call_bid_ask_diff[2],
                        '|',*put_paybacks, *put_ivs, *put_volumes, *put_open_interest, put_bid_ask_diff[1], put_bid_ask_diff[2]]
         writer.writerow(summary_row)
         csvfile.flush()

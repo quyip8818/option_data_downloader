@@ -1,6 +1,7 @@
 from datetime import datetime
 import numpy as np
 import pandas as pd
+import pytz
 import yfinance as yf
 
 from utils import round_num
@@ -25,12 +26,13 @@ def get_est_price(ask, bid, last, last_trade_date, today):
         return mid
 
 def process_option(df_raw, current_price, is_call, today):
-    df = df_raw.copy()
-    df.drop(columns=["inTheMoney", "contractSize", "currency"], inplace=True)
-    df = df.dropna(subset=['contractSymbol', 'lastTradeDate', 'strike', 'lastPrice', 'bid', 'ask'])
-    df.fillna(0)
-    df["lastTradeDate"] = df["lastTradeDate"].dt.tz_convert("EST").dt.tz_localize(None)
+    df2 = df_raw.copy()
+    df2.drop(columns=["inTheMoney", "contractSize", "currency"], inplace=True)
+    df2 = df2.dropna(subset=['contractSymbol', 'lastTradeDate', 'strike', 'lastPrice', 'bid', 'ask'])
+    df2.fillna(0)
+    df2["lastTradeDate"] = df2["lastTradeDate"].dt.tz_convert("EST").dt.tz_localize(None)
 
+    df = df2.copy()
     df = df[(df['bid'] > 0) & (df['ask'] > 0) & (df['lastPrice'] > 0)]
     df['estPrice'] = df.apply(lambda row: get_est_price(row['ask'], row['bid'], row['lastPrice'], row['lastTradeDate'], today), axis=1)
 
@@ -38,11 +40,19 @@ def process_option(df_raw, current_price, is_call, today):
         lower=0)
     df['timeValue'] = df['estPrice'] - df['inMoney']
     df['timeValuePercent'] = df['timeValue'] / current_price
-    df['strikePercent'] = df['strike'] / current_price
-    return df[df['timeValue'] > MIN_TIME_VALUE]
+    df['strikePercent'] = abs(df['strike'] - current_price) / current_price
+    df = df[df['timeValue'] > MIN_TIME_VALUE]
+
+    df2_filtered = df2[~df2['contractSymbol'].isin(df['contractSymbol'])]
+    df = pd.concat([df, df2_filtered], ignore_index=True).sort_values(by="strike").reset_index(drop=True)
+
+    return df[
+        ['contractSymbol', 'strike', 'estPrice', 'timeValue', 'timeValuePercent', 'strikePercent', 'volume', 'openInterest',
+         'inMoney', 'impliedVolatility', 'lastTradeDate', 'lastPrice', 'bid', 'ask', 'change', 'percentChange']]
 
 
 def get_max_time_value(df, current_price):
+    df = df.dropna(subset=["estPrice"])
     if df.empty:
         return np.nan, np.nan, np.nan, np.nan, np.nan
     df2 = df[['strike', 'timeValue', 'impliedVolatility', 'volume', 'openInterest', 'bid', 'ask']].copy()
@@ -111,6 +121,12 @@ def process_header_data(writer, sheet_name, data):
 def process_option_data(symbol, folder, file_name, today):
     ticker = yf.Ticker(symbol)
     current_price = ticker.fast_info["lastPrice"]
+    earnings_dates = ticker.earnings_dates
+    if not earnings_dates.empty:
+        today_pd = pd.Timestamp(today, tz=pytz.timezone("America/New_York"))
+        next_earnings_date = earnings_dates[earnings_dates.index > today_pd].index.min().to_pydatetime()
+    else:
+        next_earnings_date = pd.NaT
 
     call_dfs = []
     put_dfs = []
@@ -170,4 +186,4 @@ def process_option_data(symbol, folder, file_name, today):
             current_price_df.to_excel(writer, sheet_name=put_df[1], index=False, header=False, startrow=0)
             put_df[0].to_excel(writer, sheet_name=put_df[1], index=False, startrow=2)
 
-    return [current_price, call_paybacks, call_ivs, call_volumes, call_open_interest, call_bid_ask_diff, put_paybacks, put_ivs, put_volumes, put_open_interest, put_bid_ask_diff ]
+    return [next_earnings_date, current_price, call_paybacks, call_ivs, call_volumes, call_open_interest, call_bid_ask_diff, put_paybacks, put_ivs, put_volumes, put_open_interest, put_bid_ask_diff ]
