@@ -5,11 +5,11 @@ import pandas as pd
 import time
 
 from option import process_option_data
-from symbols import Symbols
+from symbols import get_symbols, old_symbols
 
-SKIP_SYMBOL = {}
+SKIP_SYMBOL = {'AHL', 'ARGO', 'ATCO', 'ATH'}
 
-# today = datetime.date(2025, 2, 7)
+# today = datetime.date(2025, 2, 14)
 today = datetime.date.today()
 
 today_str = today.strftime("%Y_%m_%d")
@@ -17,10 +17,14 @@ folder = f"options/{today_str}"
 os.makedirs(folder, exist_ok=True)
 
 file_name = f"{folder}/AAA_summary.csv"
+file_error_name = f"{folder}/error.csv"
 is_first_run = not os.path.exists(file_name)
 
-with open(file_name, "a", newline="", encoding="utf-8") as csvfile:
+Symbols = old_symbols
+
+with open(file_name, "a", newline="", encoding="utf-8") as csvfile, open(file_error_name, "a", newline="", encoding="utf-8") as errorfile:
     writer = csv.writer(csvfile)
+    error_writer = csv.writer(errorfile)
     if is_first_run:
         writer.writerow(
             ['symbol', 'next_earnings_days', 'price',
@@ -37,8 +41,14 @@ with open(file_name, "a", newline="", encoding="utf-8") as csvfile:
         if symbol in symbols_set or symbol in SKIP_SYMBOL:
             continue
         print(f'processing {idx}: {symbol}')
-        [next_earnings_date, current_price, call_paybacks, call_ivs, call_volumes, call_open_interest, call_bid_ask_diff, put_paybacks, put_ivs, put_volumes,
-         put_open_interest, put_bid_ask_diff] = process_option_data(symbol, folder, f"{symbol}_{today_str}", today)
+        processed_data = process_option_data(symbol, folder, f"{symbol}_{today_str}", today)
+        if processed_data is None:
+            error_writer.writerow([symbol])
+            errorfile.flush()
+            continue
+
+        [next_earnings_date, current_price, call_paybacks, call_ivs, call_volumes, call_open_interest,
+         call_bid_ask_diff, put_paybacks, put_ivs, put_volumes, put_open_interest, put_bid_ask_diff] = processed_data
 
         next_earnings_days = '' if pd.isna(next_earnings_date) else (next_earnings_date.date() - today).days
         summary_row = [symbol, next_earnings_days, current_price, *call_paybacks, *call_ivs, *call_volumes, *call_open_interest, call_bid_ask_diff[1], call_bid_ask_diff[2],

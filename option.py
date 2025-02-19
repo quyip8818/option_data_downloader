@@ -120,13 +120,22 @@ def process_header_data(writer, sheet_name, data):
 
 def process_option_data(symbol, folder, file_name, today):
     ticker = yf.Ticker(symbol)
-    current_price = ticker.fast_info["lastPrice"]
+    try:
+        current_price = ticker.fast_info["lastPrice"]
+    except Exception as e:
+        if 'Rate limited' in e.args[0]:
+            raise e
+        return None
+
     earnings_dates = ticker.earnings_dates
-    if not earnings_dates.empty:
-        today_pd = pd.Timestamp(today, tz=pytz.timezone("America/New_York"))
-        next_earnings_date = earnings_dates[earnings_dates.index > today_pd].index.min().to_pydatetime()
-    else:
+    if earnings_dates is None or earnings_dates.empty:
         next_earnings_date = pd.NaT
+    else:
+        today_pd = pd.Timestamp(today, tz=pytz.timezone("America/New_York"))
+        try:
+            next_earnings_date = earnings_dates[earnings_dates.index > today_pd].index.min().to_pydatetime()
+        except:
+            next_earnings_date = pd.NaT
 
     call_dfs = []
     put_dfs = []

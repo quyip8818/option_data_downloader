@@ -1,4 +1,29 @@
-Symbols = ['SPY',
+import csv
+
+def get_symbols():
+    etf_symbols = []
+    with open("test/symbols.csv", "r") as file:
+        reader = csv.reader(file)
+        for row in reader:
+            etf_symbols.append(row[0])
+    return etf_symbols
+
+# etf_symbols = set()
+# with open("test/symbols.csv", "r") as file:
+#     reader = csv.reader(file)
+#     for row in reader:
+#         etf_symbols.add(row[0])
+# etf_symbols = list(etf_symbols)
+# etf_symbols.sort()
+#
+# with open("test/symbols2.csv", "w", newline="") as file:
+#     writer = csv.writer(file)
+#     for etf in etf_symbols:
+#         writer.writerow([etf])
+
+
+
+old_symbols = ['SPY',
 'NVDA',
 'QQQ',
 'TSLA',
@@ -297,4 +322,7 @@ Symbols = ['SPY',
 'CZR',
 'MBLY',
 'NEE',
-'ACB',]
+'ACB',
+'MCHI',
+'FXI',
+]
