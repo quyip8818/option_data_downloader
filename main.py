@@ -5,7 +5,7 @@ import pandas as pd
 import time
 
 from option import process_option_data
-from symbols import get_symbols, old_symbols
+from symbols import get_all_symbols, symbols
 
 SKIP_SYMBOL = {'AHL', 'ARGO', 'ATCO', 'ATH'}
 
@@ -20,7 +20,7 @@ file_name = f"{folder}/AAA_summary.csv"
 file_error_name = f"{folder}/error.csv"
 is_first_run = not os.path.exists(file_name)
 
-Symbols = get_symbols()
+Symbols = symbols
 
 with open(file_name, "a", newline="", encoding="utf-8") as csvfile, open(file_error_name, "a", newline="", encoding="utf-8") as errorfile:
     writer = csv.writer(csvfile)
