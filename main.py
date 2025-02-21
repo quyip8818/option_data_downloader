@@ -16,7 +16,7 @@ today_str = today.strftime("%Y_%m_%d")
 folder = f"options/{today_str}"
 os.makedirs(folder, exist_ok=True)
 
-file_name = f"{folder}/AAA_summary.csv"
+file_name = f"{folder}/A_summary_${today_str}.csv"
 file_error_name = f"{folder}/error.csv"
 is_first_run = not os.path.exists(file_name)
 
