@@ -106,7 +106,7 @@ def process_max_time_value_df(df_raw, current_price):
 
     return (df.sort_values(by="days"),
             [round_num(payback_weeks, 2), week_row['valPct'], max_day_row['valPct']],
-            [round_num(iv_ratio, 2), round_num(week_row['impliedVolatility'], 2), round_num(max_day_row['impliedVolatility'], 2)],
+            [round_num(iv_ratio, 3), round_num(week_row['impliedVolatility'], 3), round_num(max_day_row['impliedVolatility'], 3)],
             [round_num(volume_ratio, 2), week_row['volume'], max_day_row['volume']],
             [round_num(open_interest_ratio, 2), week_row['openInterest'], max_day_row['openInterest']],
             ['', week_row['bidAskDiff'], max_day_row['bidAskDiff']],

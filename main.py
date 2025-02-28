@@ -53,6 +53,15 @@ with open(file_name, "a", newline="", encoding="utf-8") as csvfile, open(file_er
         next_earnings_days = '' if pd.isna(next_earnings_date) else (next_earnings_date.date() - today).days
         summary_row = [symbol, next_earnings_days, current_price, *call_paybacks, *call_ivs, *call_volumes, *call_open_interest, call_bid_ask_diff[1], call_bid_ask_diff[2],
                        '|',*put_paybacks, *put_ivs, *put_volumes, *put_open_interest, put_bid_ask_diff[1], put_bid_ask_diff[2]]
+
+        try:
+            if float(call_ivs[0]) <= 0.6 and float(put_ivs[0]) <= 0.6 and \
+                    float(call_ivs[2]) <= 0.35 and float(put_ivs[2]) <= 0.35 and \
+                    float(call_bid_ask_diff[1]) <= 0.5 and float(put_bid_ask_diff[1]) <= 0.5:
+                print(summary_row)
+        except:
+            pass
+
         writer.writerow(summary_row)
         csvfile.flush()
         time.sleep(2)
