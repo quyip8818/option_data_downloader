@@ -1,24 +1,35 @@
+import time
+
+import numpy as np
 import pandas as pd
 import yfinance as yf
+
+def localize_date(date):
+    if date.tz is None:
+        date = date.tz_localize('UTC')
+    return date.tz_convert('US/Eastern').date.astype(str)
 
 
 def get_earning_data(symbol):
     ticker = yf.Ticker(symbol)
     df = ticker.get_earnings_dates(limit=100)
     df = df[df['Reported EPS'].notna()]
-    date= df.index.tz_convert('US/Eastern').date
-    date_series = pd.Series(date, name='date')
-    df = pd.DataFrame(date_series)
-    df['symbol'] = symbol
-    df = df[['symbol', 'date']]
-    df.to_csv(f'finance/{symbol}.csv', index=False)
+    date= localize_date(df.index)
+    return '|'.join(date)
 
 
 df = pd.read_csv('raw/symbols.csv')
-for symbol in df['symbols'].unique():
-    try:
-        get_earning_data(symbol)
-        print(symbol)
-    except Exception as e:
-        print(e)
+# processed_df = pd.read_csv('raw/symbols.csv')
 
+with open("finance/all.csv", "w") as file:
+    for symbol in df['symbols'].unique():
+        try:
+            data_str = get_earning_data(symbol)
+            file.write(symbol + ',' +data_str + '\n')
+            file.flush()
+        except Exception as e:
+            print(symbol)
+            print(e)
+            print('---------')
+        finally:
+            time.sleep(1)
