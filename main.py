@@ -28,9 +28,9 @@ with open(file_name, "a", newline="", encoding="utf-8") as csvfile, open(file_er
     if is_first_run:
         writer.writerow(
             ['symbol', 'next_earnings_days', 'price',
-             'c_pb_w', 'c_week_valPct', 'c_max_valPct', 'c_iv_r', 'c_week_iv', 'c_max_iv',
+             'c_pb_w', 'c_week_valPct', 'c_max_valPct', 'c_iv_r', 'c_week_iv', 'c_yearly_min_iv', 'c_max_iv',
              'c_vol_r', 'c_week_vol', 'c_max_vol', 'c_oi_r', 'c_week_oi', 'c_max_oi', 'c_week_ba_diff', 'c_max_ba_diff',
-             '|', 'p_pb_w', 'p_week_valPct', 'p_max_valPct', 'p_iv_r', 'p_week_iv', 'p_max_iv',
+             '|', 'p_pb_w', 'p_week_valPct', 'p_max_valPct', 'p_iv_r', 'p_week_iv',  'p_yearly_min_iv', 'p_max_iv',
              'p_vol_r', 'p_week_vol', 'p_max_vol', 'p_oi_r', 'p_week_oi', 'p_max_oi', 'p_week_ba_diff', 'p_max_ba_diff',])
         symbols_set = set()
     else:
@@ -55,9 +55,9 @@ with open(file_name, "a", newline="", encoding="utf-8") as csvfile, open(file_er
                        '|',*put_paybacks, *put_ivs, *put_volumes, *put_open_interest, put_bid_ask_diff[1], put_bid_ask_diff[2]]
 
         try:
-            if float(call_ivs[0]) <= 0.6 and float(put_ivs[0]) <= 0.6 and \
-                    float(call_ivs[2]) <= 0.35 and float(put_ivs[2]) <= 0.35 and \
-                    float(call_bid_ask_diff[1]) <= 0.5 and float(put_bid_ask_diff[1]) <= 0.5:
+            if float(call_ivs[0]) <= 0.7 and float(put_ivs[0]) <= 0.7 and \
+                    float(call_ivs[2]) <= 0.3 and float(put_ivs[2]) <= 0.3 and \
+                    float(call_bid_ask_diff[1]) <= 0.6 and float(put_bid_ask_diff[1]) <= 0.6:
                 print(summary_row)
         except:
             pass

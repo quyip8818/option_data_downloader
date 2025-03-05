@@ -95,8 +95,11 @@ def process_max_time_value_df(df_raw, current_price):
     payback_weeks = max_day_row['value'] / week_row['value'] \
         if max_day_row['value'].any() and week_row['value'].any() else ''
 
-    iv_ratio = max_day_row['impliedVolatility'] / week_row['impliedVolatility'] \
-        if max_day_row['impliedVolatility'].any() and week_row['impliedVolatility'].any() else ''
+    long_term_min_iv = df[df['days'] > 100]['impliedVolatility'].min()
+
+
+    iv_ratio = long_term_min_iv / week_row['impliedVolatility'] \
+        if long_term_min_iv.any() and week_row['impliedVolatility'].any() else ''
 
     volume_ratio = max_day_row['volume'] / week_row['volume'] \
         if max_day_row['volume'].any() and week_row['volume'].any() else ''
@@ -106,7 +109,7 @@ def process_max_time_value_df(df_raw, current_price):
 
     return (df.sort_values(by="days"),
             [round_num(payback_weeks, 2), week_row['valPct'], max_day_row['valPct']],
-            [round_num(iv_ratio, 3), round_num(week_row['impliedVolatility'], 3), round_num(max_day_row['impliedVolatility'], 3)],
+            [round_num(iv_ratio, 3), round_num(week_row['impliedVolatility'], 3), round_num(long_term_min_iv, 3), round_num(max_day_row['impliedVolatility'], 3)],
             [round_num(volume_ratio, 2), week_row['volume'], max_day_row['volume']],
             [round_num(open_interest_ratio, 2), week_row['openInterest'], max_day_row['openInterest']],
             ['', week_row['bidAskDiff'], max_day_row['bidAskDiff']],
