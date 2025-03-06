@@ -122,6 +122,7 @@ def process_header_data(writer, sheet_name, data):
 
 
 def process_option_data(symbol, folder, file_name, today):
+    today_str = today.strftime("%Y_%m_%d")
     ticker = yf.Ticker(symbol)
     try:
         current_price = ticker.fast_info["lastPrice"]
@@ -168,6 +169,7 @@ def process_option_data(symbol, folder, file_name, today):
 
     with pd.ExcelWriter(f"{folder}/{file_name}.xlsx") as writer:
         next_start_row = process_header_data(writer, "c_all", {
+            "today": [today_str],
             "currentPrice": [current_price],
             "paybacks": call_paybacks,
             "ivs": call_ivs,
@@ -178,6 +180,7 @@ def process_option_data(symbol, folder, file_name, today):
         call_max_time_value_df.to_excel(writer, sheet_name='c_all', index=False, startrow=next_start_row)
 
         next_start_row = process_header_data(writer, "p_all", {
+            "today": [today_str],
             "currentPrice": [current_price],
             "paybacks": put_paybacks,
             "ivs": put_ivs,
