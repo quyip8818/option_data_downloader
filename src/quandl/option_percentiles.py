@@ -3,7 +3,7 @@ import datetime
 import pandas as pd
 import requests
 
-from headers import IvMeanHeaders, IvCallHeaders, IvPutHeaders
+from src.quandl.headers import IvMeanHeaders, IvCallHeaders, IvPutHeaders
 from src.utils.path_utils import get_quandl_option_iv_percentiles_path, get_quandl_option_iv_raw_path, \
     get_quandl_option_iv_rank_path
 
@@ -52,6 +52,8 @@ def fetch_option_percentiles(date):
     raw_file_name =get_quandl_option_iv_raw_path(date_path)
     download_file(url, raw_file_name)
     df = pd.read_csv(raw_file_name)
+    if len(df) < 10:
+        return
     df = df[df['date'] == date_str]
     df.set_index('ticker', inplace=True)
     df.sort_index(inplace=True)
@@ -66,7 +68,3 @@ def fetch_option_percentiles(date):
     all_df.to_csv(get_quandl_option_iv_rank_path(date_path), index=True)
 
 
-today = datetime.date(2025, 3, 6)
-# today = datetime.date.today()
-
-fetch_option_percentiles(today)

@@ -4,7 +4,7 @@ import pandas as pd
 import pytz
 import yfinance as yf
 
-from utils import round_num
+from src.utils.utils import round_num
 
 MIN_TIME_VALUE = 0.05
 CONTRACT_COST = 0.05

@@ -4,13 +4,14 @@ import os
 import pandas as pd
 import time
 
-from option import process_option_data, has_option
-from symbols import get_all_symbols, symbols
+from src.yfinance.option import process_option_data
+from src.symbols import symbols
 
 SKIP_SYMBOL = {}
 
 # today = datetime.date(2025, 2, 14)
 today = datetime.date.today()
+
 
 today_str = today.strftime("%Y_%m_%d")
 folder = f"options/{today_str}"
@@ -19,8 +20,6 @@ os.makedirs(folder, exist_ok=True)
 file_name = f"{folder}/A_summary_{today_str}.csv"
 file_error_name = f"{folder}/error.csv"
 is_first_run = not os.path.exists(file_name)
-
-Symbols = symbols
 
 with open(file_name, "a", newline="", encoding="utf-8") as csvfile, open(file_error_name, "a", newline="", encoding="utf-8") as errorfile:
     writer = csv.writer(csvfile)
@@ -37,7 +36,7 @@ with open(file_name, "a", newline="", encoding="utf-8") as csvfile, open(file_er
         df = pd.read_csv(file_name)
         symbols_set = set(df['symbol'])
 
-    for idx, symbol in enumerate(Symbols):
+    for idx, symbol in enumerate(symbols):
         if symbol in symbols_set or symbol in SKIP_SYMBOL:
             continue
         print(f'processing {idx}: {symbol}')

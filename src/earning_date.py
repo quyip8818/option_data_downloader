@@ -1,8 +1,10 @@
 import time
 
-import numpy as np
 import pandas as pd
 import yfinance as yf
+
+from src.utils.path_utils import get_raw_path
+
 
 def localize_date(date):
     if date.tz is None:
@@ -18,7 +20,7 @@ def get_earning_data(symbol):
     return '|'.join(date)
 
 
-df = pd.read_csv('../raw/symbols.csv')
+df = pd.read_csv(get_raw_path('symbols.csv'))
 # processed_df = pd.read_csv('raw/symbols.csv')
 
 with open("finance/all.csv", "w") as file:

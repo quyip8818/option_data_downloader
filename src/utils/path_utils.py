@@ -18,3 +18,11 @@ def get_quandl_option_iv_rank_path(date):
 
 def get_quandl_option_iv_percentiles_path(header):
     return f'{root_dir}/quandl/option_iv_percentiles/{header}.csv'
+
+
+def get_raw_path(file):
+    return f'{root_dir}/raw/{file}'
+
+
+def get_src_module_path(path):
+    return f'{root_dir}/src/{path}'
