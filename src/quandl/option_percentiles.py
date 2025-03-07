@@ -67,4 +67,7 @@ def fetch_option_percentiles(date):
 
 
 def get_last_iv_rank():
-    return pd.read_csv(get_quandl_option_iv_rank_latest())
+    df = pd.read_csv(get_quandl_option_iv_rank_latest())
+    df.set_index('symbol', inplace=True)
+    return df
+
