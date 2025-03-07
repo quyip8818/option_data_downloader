@@ -1,11 +1,9 @@
-import datetime
-
 import pandas as pd
 import requests
 
 from src.quandl.headers import IvMeanHeaders, IvCallHeaders, IvPutHeaders
 from src.utils.path_utils import get_quandl_option_iv_percentiles_path, get_quandl_option_iv_raw_path, \
-    get_quandl_option_iv_rank_path
+    get_quandl_option_iv_rank_path, get_quandl_option_iv_rank_latest
 
 
 def download_file(url, save_path):
@@ -68,3 +66,5 @@ def fetch_option_percentiles(date):
     all_df.to_csv(get_quandl_option_iv_rank_path(date_path), index=True)
 
 
+def get_last_iv_rank():
+    return pd.read_csv(get_quandl_option_iv_rank_latest())
