@@ -4,10 +4,10 @@ import os
 import pandas as pd
 import time
 
-from option import process_option_data
+from option import process_option_data, has_option
 from symbols import get_all_symbols, symbols
 
-SKIP_SYMBOL = {'AHL', 'ARGO', 'ATCO', 'ATH'}
+SKIP_SYMBOL = {}
 
 # today = datetime.date(2025, 2, 14)
 today = datetime.date.today()
@@ -65,3 +65,15 @@ with open(file_name, "a", newline="", encoding="utf-8") as csvfile, open(file_er
         writer.writerow(summary_row)
         csvfile.flush()
         time.sleep(2)
+
+
+# with open(f"summary.csv", "a", newline="", encoding="utf-8") as csvfile:
+#     writer = csv.writer(csvfile)
+#     for symbol in Symbols:
+#         print(f'processing: {symbol}')
+#         if has_option(symbol):
+#             writer.writerow([symbol])
+#             csvfile.flush()
+#             time.sleep(0.3)
+
+

@@ -202,3 +202,8 @@ def process_option_data(symbol, folder, file_name, today):
             put_df[0].to_excel(writer, sheet_name=put_df[1], index=False, startrow=2)
 
     return [next_earnings_date, current_price, call_paybacks, call_ivs, call_volumes, call_open_interest, call_bid_ask_diff, put_paybacks, put_ivs, put_volumes, put_open_interest, put_bid_ask_diff ]
+
+
+def has_option(symbol):
+    ticker = yf.Ticker(symbol)
+    return len(ticker.options) >= 10
