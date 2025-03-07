@@ -26,20 +26,21 @@ def find_percentile(value, percentiles):
 
 
 def find_percentiles(df, header):
-    values_df = df.get(header)
-    if values_df is None:
+    values_s = df.get(header)
+    if values_s is None:
         return  None
-    values_df = values_df.dropna()
+    values_s = values_s.dropna()
     percentiles_df = pd.read_csv(get_quandl_option_iv_percentiles_path(header))
     percentiles_df.set_index('percentiles', inplace=True)
     symbol_ranks = {}
-    for symbol, value in values_df.items():
+    for symbol, value in values_s.items():
         percentiles = percentiles_df.get(symbol)
         if percentiles is None:
             continue
         rank = find_percentile(value, percentiles) * 100
         symbol_ranks[symbol] = rank
-    return pd.DataFrame(pd.Series(symbol_ranks).astype(int), columns=[header])
+    rank_s = pd.Series(symbol_ranks).astype(int)
+    return pd.DataFrame({header: values_s, f'{header}_rank': rank_s})
 
 
 def fetch_option_percentiles(date):
@@ -60,7 +61,6 @@ def fetch_option_percentiles(date):
     for header in IvMeanHeaders + IvCallHeaders + IvPutHeaders:
         dfs.append(find_percentiles(df, header))
     all_df = pd.concat(dfs, axis=1)
-    all_df.dropna(subset=['ivmean10', 'ivmean720'], inplace=True)
     all_df.rename_axis('symbol', inplace=True)
     all_df.sort_index(inplace=True)
     all_df.to_csv(get_quandl_option_iv_rank_path(date_path), index=True)

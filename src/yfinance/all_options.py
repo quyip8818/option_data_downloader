@@ -10,8 +10,8 @@ def decode_iv_rank(iv_rank_df, symbol):
     if symbol not in iv_rank_df.index:
         return (None, None, None), (None, None, None)
     iv_rank = iv_rank_df.loc[symbol]
-    return ((iv_rank['ivcall10'], iv_rank['ivcall180'], iv_rank['ivcall720']),
-            (iv_rank['ivput10'], iv_rank['ivput180'], iv_rank['ivput720']))
+    return ((iv_rank['ivcall10'], iv_rank['ivcall10_rank'], iv_rank['ivcall180'], iv_rank['ivcall180_rank'], iv_rank['ivcall720'], iv_rank['ivcall720_rank']),
+            (iv_rank['ivput10'], iv_rank['ivput10_rank'], iv_rank['ivput180'], iv_rank['ivput180_rank'], iv_rank['ivput720'], iv_rank['ivput720_rank']))
 
 
 def fetch_all_yf_options(today, iv_rank_df, skip_symbols):
@@ -29,9 +29,13 @@ def fetch_all_yf_options(today, iv_rank_df, skip_symbols):
         if is_first_run:
             writer.writerow(
                 ['symbol', 'next_earnings_days', 'price',
-                 'c_pb_w', 'c_week_valPct', 'c_max_valPct', 'c_iv_10', 'c_iv_180', 'c_iv_720', 'c_iv_r', 'c_week_iv', 'c_yearly_min_iv', 'c_max_iv',
+                 'c_pb_w', 'c_week_valPct', 'c_max_valPct',
+                 'c_iv_10', 'c_iv_10_rank', 'c_iv_180', 'c_iv_180_rank', 'c_iv_720', 'c_iv_720_rank',
+                 'c_iv_r', 'c_week_iv', 'c_yearly_min_iv', 'c_max_iv',
                  'c_vol_r', 'c_week_vol', 'c_max_vol', 'c_oi_r', 'c_week_oi', 'c_max_oi', 'c_week_ba_diff', 'c_max_ba_diff',
-                 '|', 'p_pb_w', 'p_week_valPct', 'p_max_valPct', 'p_iv_10', 'p_iv_180', 'p_iv_720', 'p_iv_r', 'p_week_iv',  'p_yearly_min_iv', 'p_max_iv',
+                 '|', 'p_pb_w', 'p_week_valPct', 'p_max_valPct',
+                 'p_iv_10', 'p_iv_10_rank', 'p_iv_180', 'p_iv_180_rank', 'p_iv_720', 'p_iv_720_rank',
+                 'p_iv_r', 'p_week_iv',  'p_yearly_min_iv', 'p_max_iv',
                  'p_vol_r', 'p_week_vol', 'p_max_vol', 'p_oi_r', 'p_week_oi', 'p_max_oi', 'p_week_ba_diff', 'p_max_ba_diff',])
             symbols_set = set()
         else:
