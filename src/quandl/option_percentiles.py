@@ -4,6 +4,7 @@ import requests
 from src.quandl.headers import IvMeanHeaders, IvCallHeaders, IvPutHeaders
 from src.utils.path_utils import get_quandl_option_iv_percentiles_path, get_quandl_option_iv_raw_path, \
     get_quandl_option_iv_rank_path, get_quandl_option_iv_rank_latest
+from src.utils.utils import get_percentile_rank
 
 
 def download_file(url, save_path):
@@ -18,13 +19,6 @@ def get_url(date_str):
     return f'https://data.nasdaq.com/api/v3/datatables/QUANTCHA/VOL.csv?date=${date_str}&api_key=ka3E2qaQEpR4Ps7a8kus'
 
 
-def find_percentile(value, percentiles):
-    for percentile, v in percentiles.items():
-        if v > value:
-            return percentile
-    return 1
-
-
 def find_percentiles(df, header):
     values_s = df.get(header)
     if values_s is None:
@@ -37,7 +31,7 @@ def find_percentiles(df, header):
         percentiles = percentiles_df.get(symbol)
         if percentiles is None:
             continue
-        rank = find_percentile(value, percentiles) * 100
+        rank = get_percentile_rank(value, percentiles)
         symbol_ranks[symbol] = rank
     rank_s = pd.Series(symbol_ranks).astype(int)
     return pd.DataFrame({header: values_s, f'{header}_rank': rank_s})
