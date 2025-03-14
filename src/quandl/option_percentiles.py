@@ -4,7 +4,7 @@ import requests
 from src.quandl.headers import IvMeanHeaders, IvCallHeaders, IvPutHeaders
 from src.utils.path_utils import get_quandl_option_iv_percentiles_path, get_quandl_option_iv_raw_path, \
     get_quandl_option_iv_rank_path, get_quandl_option_iv_rank_latest
-from src.utils.utils import get_percentile_rank
+from src.utils.idx_utils import get_percentile_rank
 
 
 def download_file(url, save_path):

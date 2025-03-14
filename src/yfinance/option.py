@@ -80,7 +80,7 @@ def process_max_time_value_df(df_raw, current_price):
     df['IV'] = df['impliedVolatility'].apply(lambda x: f"{x:.3f}")
     df[' '] = ''
     df = df[
-        ['days', 'valPct', 'dayValPct', 'yearValPct', 'val', 'IV', 'volume', 'openInterest', 'bidAskDiff', ' ',
+        ['days', 'valPct', 'dayValPct', 'yearValPct', 'val', 'IV', 'volume', 'openInterest', 'ba_spread', ' ',
          'valuePercent', 'dayValuePercent', 'yearValuePercent', 'value', 'impliedVolatility']]
 
     week_row = None
@@ -112,7 +112,7 @@ def process_max_time_value_df(df_raw, current_price):
             [round_num(iv_ratio, 3), round_num(week_row['impliedVolatility'], 3), round_num(long_term_min_iv, 3), round_num(max_day_row['impliedVolatility'], 3)],
             [round_num(volume_ratio, 2), week_row['volume'], max_day_row['volume']],
             [round_num(open_interest_ratio, 2), week_row['openInterest'], max_day_row['openInterest']],
-            ['', week_row['bidAskDiff'], max_day_row['bidAskDiff']],
+            ['', week_row['ba_spread'], max_day_row['ba_spread']],
         )
 
 
@@ -143,8 +143,8 @@ def process_option_data(symbol, folder, file_name, today):
 
     call_dfs = []
     put_dfs = []
-    call_max_time_value_df = pd.DataFrame(columns=["days", "value", "impliedVolatility", 'volume', 'openInterest', 'bidAskDiff'])
-    put_max_time_value_df = pd.DataFrame(columns=["days", "value", "impliedVolatility", 'volume', 'openInterest', 'bidAskDiff'])
+    call_max_time_value_df = pd.DataFrame(columns=["days", "value", "impliedVolatility", 'volume', 'openInterest', 'ba_spread'])
+    put_max_time_value_df = pd.DataFrame(columns=["days", "value", "impliedVolatility", 'volume', 'openInterest', 'ba_spread'])
 
     for date_str in ticker.options:
         opt_chain = ticker.option_chain(date_str)
@@ -164,8 +164,8 @@ def process_option_data(symbol, folder, file_name, today):
         put_max_time_value = get_max_time_value(put_df, current_price)
         put_max_time_value_df.loc[len(put_max_time_value_df)] = [diff_days, *put_max_time_value]
 
-    call_max_time_value_df, call_paybacks, call_ivs, call_volumes, call_open_interest, call_bid_ask_diff = process_max_time_value_df(call_max_time_value_df, current_price)
-    put_max_time_value_df, put_paybacks, put_ivs, put_volumes, put_open_interest, put_bid_ask_diff = process_max_time_value_df(put_max_time_value_df, current_price)
+    call_max_time_value_df, call_paybacks, call_ivs, call_volumes, call_open_interest, call_ba_spread = process_max_time_value_df(call_max_time_value_df, current_price)
+    put_max_time_value_df, put_paybacks, put_ivs, put_volumes, put_open_interest, put_ba_spread = process_max_time_value_df(put_max_time_value_df, current_price)
 
     with pd.ExcelWriter(f"{folder}/{file_name}.xlsx") as writer:
         next_start_row = process_header_data(writer, "c_all", {
@@ -175,7 +175,7 @@ def process_option_data(symbol, folder, file_name, today):
             "ivs": call_ivs,
             "volumes": call_volumes,
             "open_interest": call_open_interest,
-            "bid_ask_diff": call_bid_ask_diff,
+            "bid_ask_diff": call_ba_spread,
         })
         call_max_time_value_df.to_excel(writer, sheet_name='c_all', index=False, startrow=next_start_row)
 
@@ -186,7 +186,7 @@ def process_option_data(symbol, folder, file_name, today):
             "ivs": put_ivs,
             "volumes": put_volumes,
             "open_interest": put_open_interest,
-            "bid_ask_diff": put_bid_ask_diff,
+            "ba_spread": put_ba_spread,
         })
         put_max_time_value_df.to_excel(writer, sheet_name='p_all', index=False, startrow=next_start_row)
 
@@ -201,7 +201,7 @@ def process_option_data(symbol, folder, file_name, today):
             current_price_df.to_excel(writer, sheet_name=put_df[1], index=False, header=False, startrow=0)
             put_df[0].to_excel(writer, sheet_name=put_df[1], index=False, startrow=2)
 
-    return [next_earnings_date, current_price, call_paybacks, call_ivs, call_volumes, call_open_interest, call_bid_ask_diff, put_paybacks, put_ivs, put_volumes, put_open_interest, put_bid_ask_diff ]
+    return [next_earnings_date, current_price, call_paybacks, call_ivs, call_volumes, call_open_interest, call_ba_spread, put_paybacks, put_ivs, put_volumes, put_open_interest, put_ba_spread]
 
 
 def has_option(symbol):
