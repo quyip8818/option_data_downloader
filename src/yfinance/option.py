@@ -4,7 +4,7 @@ import pandas as pd
 import pytz
 import yfinance as yf
 
-from src.utils.option_utils import get_ba_spread
+from src.utils.option_utils import get_ba_spread, get_otm_ratio
 from src.utils.utils import round_num
 
 MIN_TIME_VALUE = 0.05
@@ -37,12 +37,12 @@ def process_option(df_raw, current_price, is_call, today):
     df = df[(df['bid'] > 0) & (df['ask'] > 0) & (df['lastPrice'] > 0)]
     df['estPrice'] = df.apply(lambda row: get_est_price(row['ask'], row['bid'], row['lastPrice'], row['lastTradeDate'], today), axis=1)
     df['ba_spread'] = df.apply(lambda row: get_ba_spread(row['bid'], row['ask']), axis=1)
+    df['otm_r'] = df.apply(lambda row: get_otm_ratio(current_price, row['strike'], is_call), axis=1)
 
     df['inMoney'] = (current_price - df['strike']).clip(lower=0) if is_call else (df['strike'] - current_price).clip(
         lower=0)
     df['timeValue'] = df['estPrice'] - df['inMoney']
     df['timeValuePercent'] = df['timeValue'] / current_price
-    df['strikePercent'] = abs(df['strike'] - current_price) / current_price
 
     df = df[df['timeValue'] > MIN_TIME_VALUE]
 
@@ -50,7 +50,7 @@ def process_option(df_raw, current_price, is_call, today):
     df = pd.concat([df, df2_filtered], ignore_index=True).sort_values(by="strike").reset_index(drop=True)
 
     return df[
-        ['contractSymbol', 'strike', 'estPrice', 'timeValue', 'timeValuePercent', 'strikePercent', 'ba_spread', 'volume', 'openInterest',
+        ['contractSymbol', 'strike', 'estPrice', 'timeValue', 'timeValuePercent', 'otm_r', 'ba_spread', 'volume', 'openInterest',
          'inMoney', 'impliedVolatility', 'lastTradeDate', 'lastPrice', 'bid', 'ask', 'change', 'percentChange']]
 
 
