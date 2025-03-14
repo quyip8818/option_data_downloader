@@ -4,6 +4,7 @@ import pandas as pd
 import pytz
 import yfinance as yf
 
+from src.utils.option_utils import get_ba_spread
 from src.utils.utils import round_num
 
 MIN_TIME_VALUE = 0.05
@@ -35,19 +36,21 @@ def process_option(df_raw, current_price, is_call, today):
     df = df2.copy()
     df = df[(df['bid'] > 0) & (df['ask'] > 0) & (df['lastPrice'] > 0)]
     df['estPrice'] = df.apply(lambda row: get_est_price(row['ask'], row['bid'], row['lastPrice'], row['lastTradeDate'], today), axis=1)
+    df['ba_spread'] = df.apply(lambda row: get_ba_spread(row['bid'], row['ask']), axis=1)
 
     df['inMoney'] = (current_price - df['strike']).clip(lower=0) if is_call else (df['strike'] - current_price).clip(
         lower=0)
     df['timeValue'] = df['estPrice'] - df['inMoney']
     df['timeValuePercent'] = df['timeValue'] / current_price
     df['strikePercent'] = abs(df['strike'] - current_price) / current_price
+
     df = df[df['timeValue'] > MIN_TIME_VALUE]
 
     df2_filtered = df2[~df2['contractSymbol'].isin(df['contractSymbol'])]
     df = pd.concat([df, df2_filtered], ignore_index=True).sort_values(by="strike").reset_index(drop=True)
 
     return df[
-        ['contractSymbol', 'strike', 'estPrice', 'timeValue', 'timeValuePercent', 'strikePercent', 'volume', 'openInterest',
+        ['contractSymbol', 'strike', 'estPrice', 'timeValue', 'timeValuePercent', 'strikePercent', 'ba_spread', 'volume', 'openInterest',
          'inMoney', 'impliedVolatility', 'lastTradeDate', 'lastPrice', 'bid', 'ask', 'change', 'percentChange']]
 
 
@@ -55,14 +58,14 @@ def get_max_time_value(df, current_price):
     df = df.dropna(subset=["estPrice"])
     if df.empty:
         return np.nan, np.nan, np.nan, np.nan, np.nan
-    df2 = df[['strike', 'timeValue', 'impliedVolatility', 'volume', 'openInterest', 'bid', 'ask']].copy()
+    df2 = df[['strike', 'timeValue', 'impliedVolatility', 'volume', 'openInterest', 'bid', 'ask', 'ba_spread']].copy()
     df2['price_diff'] = abs(df2['strike'] - current_price)
     top_row = df2.sort_values(['price_diff'], ascending=[True]).iloc[0]
     return (float(top_row['timeValue']),
             float(top_row['impliedVolatility']),
             float(top_row['volume']),
             float(top_row['openInterest']),
-            round(float(top_row['ask']) - float(top_row['bid']), 2))
+            float(top_row['ba_spread']),)
 
 
 MAX_TIME_VALUE_DAY_OFFSET_ORDER = [7, 6, 5, 4, 8, 9, 10, 11, 12, 13, 14, 15]
@@ -175,7 +178,7 @@ def process_option_data(symbol, folder, file_name, today):
             "ivs": call_ivs,
             "volumes": call_volumes,
             "open_interest": call_open_interest,
-            "bid_ask_diff": call_ba_spread,
+            "ba_spread": call_ba_spread,
         })
         call_max_time_value_df.to_excel(writer, sheet_name='c_all', index=False, startrow=next_start_row)
 
