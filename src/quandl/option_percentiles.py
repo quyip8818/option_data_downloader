@@ -1,3 +1,5 @@
+import os
+
 import pandas as pd
 import requests
 
@@ -9,6 +11,7 @@ from src.utils.idx_utils import get_percentile_rank
 
 
 def download_file(url, save_path):
+    print('start downloading: ' + url)
     response = requests.get(url, stream=True)
     response.raise_for_status()
     with open(save_path, 'wb') as file:
@@ -43,7 +46,8 @@ def fetch_option_percentiles(date):
     date_path = date.strftime("%Y_%m_%d")
     url = get_url(date_str)
     raw_file_name =get_quandl_option_iv_raw_path(date_path)
-    download_file(url, raw_file_name)
+    if not os.path.exists(raw_file_name):
+        download_file(url, raw_file_name)
     df = pd.read_csv(raw_file_name)
     if len(df) < 10:
         return
