@@ -42,7 +42,7 @@ def find_percentiles(df, header):
 
 
 def fetch_option_percentiles(date):
-    date_str = get_last_workday(date)
+    date_str = date.strftime("%Y-%m-%d")
     date_path = date.strftime("%Y_%m_%d")
     url = get_url(date_str)
     raw_file_name =get_quandl_option_iv_raw_path(date_path)
