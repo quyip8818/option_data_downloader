@@ -8,7 +8,7 @@ from src.symbols import symbols
 
 def decode_iv_rank(iv_rank_df, symbol):
     if symbol not in iv_rank_df.index:
-        return (None, None, None), (None, None, None)
+        return (None, None, None, None, None, None), (None, None, None, None, None, None)
     iv_rank = iv_rank_df.loc[symbol]
     return ((iv_rank['ivcall10'], iv_rank['ivcall10_rank'], iv_rank['ivmean10'], iv_rank['ivmean10_rank'], iv_rank['ivcall1080'], iv_rank['ivcall1080_rank']),
             (iv_rank['ivput10'], iv_rank['ivput10_rank'], iv_rank['ivmean10'], iv_rank['ivmean180_rank'], iv_rank['ivput1080'], iv_rank['ivput1080_rank']))
@@ -73,15 +73,3 @@ def fetch_all_yf_options(today, iv_rank_df, skip_symbols):
             writer.writerow(summary_row)
             csvfile.flush()
             time.sleep(2)
-
-
-# with open(f"summary.csv", "a", newline="", encoding="utf-8") as csvfile:
-#     writer = csv.writer(csvfile)
-#     for symbol in Symbols:
-#         print(f'processing: {symbol}')
-#         if has_option(symbol):
-#             writer.writerow([symbol])
-#             csvfile.flush()
-#             time.sleep(0.3)
-
-
