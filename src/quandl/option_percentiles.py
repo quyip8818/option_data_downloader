@@ -1,4 +1,5 @@
 import os
+from time import sleep
 
 import pandas as pd
 import requests
@@ -46,7 +47,7 @@ def fetch_option_percentiles(date):
     date_path = date.strftime("%Y_%m_%d")
     url = get_url(date_str)
     raw_file_name =get_quandl_option_iv_raw_path(date_path)
-    if not os.path.exists(raw_file_name):
+    if not os.path.exists(raw_file_name) or pd.read_csv(raw_file_name).empty:
         download_file(url, raw_file_name)
     df = pd.read_csv(raw_file_name)
     if len(df) < 10:
@@ -63,6 +64,7 @@ def fetch_option_percentiles(date):
     all_df.rename_axis('symbol', inplace=True)
     all_df.sort_index(inplace=True)
     all_df.to_csv(get_quandl_option_iv_rank_path(date_path), index=True)
+    sleep(1)
 
 
 def get_last_iv_rank():
