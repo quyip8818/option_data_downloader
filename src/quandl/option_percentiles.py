@@ -1,4 +1,6 @@
-import dask.dataframe as dd
+import os
+from time import sleep
+
 import pandas as pd
 
 from src.quandl.headers import IvMeanHeaders, IvCallHeaders, IvPutHeaders, PercentiledIVHeader
@@ -7,6 +9,7 @@ from src.utils.path_utils import get_quandl_option_iv_percentiles_path, get_quan
 from src.utils.idx_utils import get_percentile_rank
 from src.utils.download_utils import download_file, get_quandl_last_day_iv_url
 
+TargetHeader = ['date'] + [h for header in PercentiledIVHeader for h in (header, f"{header}_rank")]
 
 def find_percentiles(df, header):
     values_s = df.get(header)
@@ -38,14 +41,14 @@ def percentile_last_day_iv_rank(raw_file_name, date_str):
         return None
 
     df = df[df['date'] == date_str]
-    df.set_index('ticker', inplace=True)
+    df.rename(columns={'ticker': 'symbol'}, inplace=True)
+    df.set_index('symbol', inplace=True)
     df.sort_index(inplace=True)
 
     dfs = []
-    for header in IvMeanHeaders + IvCallHeaders + IvPutHeaders:
+    for header in PercentiledIVHeader:
         dfs.append(find_percentiles(df, header))
     all_df = pd.concat(dfs, axis=1)
-    all_df.rename_axis('symbol', inplace=True)
     all_df.sort_index(inplace=True)
     return all_df
 
@@ -56,14 +59,33 @@ def fetch_option_percentiles(date):
     date_path = date.strftime("%Y_%m_%d")
     url = get_quandl_last_day_iv_url(date_str)
     raw_file_name =get_quandl_option_iv_raw_path(date_path)
-    # if os.path.exists(raw_file_name) and not pd.read_csv(raw_file_name).empty:
-    #     return False
-    # download_file(url, raw_file_name)
-    # sleep(1)
+    if os.path.exists(raw_file_name) and not pd.read_csv(raw_file_name).empty:
+        return False
+    download_file(url, raw_file_name)
+    sleep(1)
     df = percentile_last_day_iv_rank(raw_file_name, date_str)
     if df is None:
         return False
     df.to_csv(get_quandl_option_iv_rank_path(date_path), index=True)
+    for symbol, row in df.iterrows():
+        if symbol == 'nan':
+            continue
+        symbol_file_path = get_quandl_path(f"option_iv_rank_by_symbols/{symbol}.csv")
+        df = pd.read_csv(symbol_file_path) if os.path.exists(symbol_file_path) else None
+        has_symbol = df is not None and len(df) > 0
+        if has_symbol and not df.loc[df['date'] == date_str].empty:
+            continue
+
+        row['date'] = date_str
+        row_df = pd.DataFrame([row])
+        row_df = row_df[TargetHeader]
+
+        if has_symbol:
+            df = pd.concat([row_df, df], ignore_index=True)
+            df.sort_values(by=['date'], ascending=[False], inplace=True)
+        else:
+            df = row_df
+        df.to_csv(get_quandl_path(f"option_iv_rank_by_symbols/{symbol}.csv"), index=False)
 
 
 def quantiles_all_iv():
@@ -77,10 +99,9 @@ def quantiles_all_iv():
     df.rename(columns={'ticker': 'symbol'}, inplace=True)
     df.dropna(inplace=True)
 
-    TargetHeader = ['date'] + [h for header in PercentiledIVHeader for h in (header, f"{header}_rank")]
     for symbol, symbol_df in df.groupby('symbol'):
         print(symbol)
-        symbol_df = symbol_df.sort_values(by=['date'], ascending=[False])
+        symbol_df.sort_values(by=['date'], ascending=[False], inplace=True)
         success = True
         for header in PercentiledIVHeader:
             percentiles = q_dfs[header].get(symbol)
@@ -95,7 +116,3 @@ def quantiles_all_iv():
         symbol_df = symbol_df[TargetHeader]
         symbol_df.sort_values(by=['date'], ascending=[False], inplace=True)
         symbol_df.to_csv(get_quandl_path(f"option_iv_rank_by_symbols/{symbol}.csv"), index=False)
-
-
-if __name__ == '__main__':
-    quantiles_all_iv()
