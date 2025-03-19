@@ -7,4 +7,5 @@ def read_iv_rank(symbol):
 
 
 if __name__ == "__main__":
-    read_iv_rank("IOT")
+    for symbol in ['IOT', 'SRPT', 'SU']:
+        read_iv_rank(symbol)

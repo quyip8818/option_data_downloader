@@ -66,7 +66,7 @@ def fetch_option_percentiles(date):
     df = percentile_last_day_iv_rank(raw_file_name, date_str)
     if df is None:
         return False
-    df.to_csv(get_quandl_option_iv_rank_path(date_path), index=True)
+    df.to_csv(get_quandl_option_iv_rank_path(date_path), index=True, index_label='symbol')
     for symbol, row in df.iterrows():
         if symbol == 'nan':
             continue

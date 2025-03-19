@@ -28,7 +28,7 @@ def fetch_all_yf_options(today, iv_rank_df, skip_symbols):
         error_writer = csv.writer(errorfile)
         if is_first_run:
             writer.writerow(
-                ['symbol', 'next_earnings_days', 'price',
+                ['symbol', 'next_earnings_days', 'next_earnings_date','price',
                  'c_pb_w', 'c_week_valPct', 'c_max_valPct',
                  'c_iv_10', 'c_iv_10_rank', 'm_iv_10', 'm_iv_10_rank', 'c_iv_1080', 'c_iv_1080_rank',
                  'c_iv_r', 'c_week_iv', 'c_yearly_min_iv', 'c_max_iv',
@@ -59,7 +59,7 @@ def fetch_all_yf_options(today, iv_rank_df, skip_symbols):
 
             [call_iv_rank, put_iv_rank] = decode_iv_rank(iv_rank_df, symbol)
 
-            summary_row = [symbol, next_earnings_days, current_price, *call_paybacks, *call_iv_rank, *call_ivs, *call_volumes, *call_open_interest, call_bid_ask_diff[1], call_bid_ask_diff[2],
+            summary_row = [symbol, next_earnings_days, next_earnings_date.date(), current_price, *call_paybacks, *call_iv_rank, *call_ivs, *call_volumes, *call_open_interest, call_bid_ask_diff[1], call_bid_ask_diff[2],
                            '|',*put_paybacks, *put_iv_rank, *put_ivs, *put_volumes, *put_open_interest, put_bid_ask_diff[1], put_bid_ask_diff[2]]
 
             try:
