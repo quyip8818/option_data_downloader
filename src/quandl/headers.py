@@ -16,3 +16,5 @@ IvMeanHeaders = ['ivmean10', 'ivmean20', 'ivmean30', 'ivmean60', 'ivmean90', 'iv
 IvMeanSkewHeaders = ['ivmeanskew10', 'ivmeanskew20', 'ivmeanskew30', 'ivmeanskew60', 'ivmeanskew90', 'ivmeanskew120',
                      'ivmeanskew150', 'ivmeanskew180', 'ivmeanskew270', 'ivmeanskew360', 'ivmeanskew720',
                      'ivmeanskew1080']
+
+PercentiledIVHeader = ['ivmean10', 'ivcall10', 'ivput10', 'ivmean1080', 'ivcall1080', 'ivput1080']

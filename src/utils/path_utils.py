@@ -7,9 +7,12 @@ root_dir = Path(__file__).resolve().parents[
 ]
 
 
+def get_quandl_path(folder):
+    return f'{root_dir}/quandl/{folder}'
+
+
 def get_quandl_option_iv_raw_path(date):
     return f'{root_dir}/quandl/option_iv_raw/{date}.csv'
-
 
 
 def get_quandl_option_iv_rank_path(date):
@@ -34,3 +37,6 @@ def get_raw_path(file):
 
 def get_src_module_path(path):
     return f'{root_dir}/src/{path}'
+
+def extract_file_name(path):
+    return os.path.splitext(os.path.basename(path))[0]
