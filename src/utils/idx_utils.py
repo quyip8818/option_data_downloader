@@ -25,6 +25,8 @@ def get_percentile(percentiles: pd.Series, value):
 
 
 def get_percentile_rank(percentiles, value):
+    if not isinstance(value, float) or math.isnan(value):
+        return None
     return math.floor(get_percentile(percentiles, value) * 100)
 
 
