@@ -115,7 +115,7 @@ def quantiles_all_iv():
         if not success:
             continue
         symbol_df = symbol_df[TargetHeader]
-        symbol_df.sort_values(by=['date'], ascending=[False], inplace=True)
+        symbol_df = symbol_df.sort_values(by=['date'], ascending=[False])
         symbol_df.to_csv(get_quandl_path(f"option_iv_rank_by_symbols/{symbol}.csv"), index=False)
 
 
