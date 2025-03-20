@@ -13,11 +13,6 @@ def get_symbols(str):
     return sorted([w.strip() for w in re.split(r'\s+', str)])
 
 if __name__ == "__main__":
-    for symbol in get_symbols("""ADSK
-DASH
-DDOG
-HES
-VRTX
-ZS"""):
+    for symbol in get_symbols("""TLT"""):
         read_iv_rank(symbol)
         sleep(0.1)

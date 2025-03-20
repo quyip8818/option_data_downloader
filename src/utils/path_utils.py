@@ -27,8 +27,12 @@ def get_quandl_option_iv_rank_latest():
     return get_quandl_option_iv_rank_path(last_date)
 
 
-def get_quandl_option_iv_percentiles_path(header):
-    return f'{root_dir}/quandl/option_iv_percentiles/{header}.csv'
+def get_iv_percentiles_by_header(header):
+    return f'{root_dir}/data/iv_percentiles_headers/{header}.csv'
+
+
+def get_iv_percentiles_by_symbol_path(symbol):
+    return f'{root_dir}/data/iv_percentiles_symbols/{symbol}.csv'
 
 
 def get_raw_path(file):
