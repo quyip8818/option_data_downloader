@@ -86,7 +86,7 @@ def fetch_option_percentiles(date):
             df.sort_values(by=['date'], ascending=[False], inplace=True)
         else:
             df = row_df
-        df.to_csv(get_iv_percentiles_by_symbol_path(symbol), index=False)
+        df.to_csv(symbol_file_path, index=False)
 
 
 def quantiles_all_iv():
