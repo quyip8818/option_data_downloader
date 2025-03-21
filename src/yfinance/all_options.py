@@ -1,7 +1,6 @@
 import csv
 import os
 import pandas as pd
-import time
 
 from src.yfinance.option import process_option_data
 from src.symbols import symbols
@@ -72,4 +71,3 @@ def fetch_all_yf_options(today, iv_rank_df, skip_symbols):
 
             writer.writerow(summary_row)
             csvfile.flush()
-            time.sleep(2)

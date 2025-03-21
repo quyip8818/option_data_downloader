@@ -1,6 +1,7 @@
 import os
 from time import sleep
 
+import numpy as np
 import pandas as pd
 
 from src.quandl.headers import IvMeanHeaders, IvCallHeaders, IvPutHeaders, PercentiledIVHeader
@@ -103,17 +104,14 @@ def quantiles_all_iv():
     for symbol, symbol_df in df.groupby('symbol'):
         print(symbol)
         symbol_df.sort_values(by=['date'], ascending=[False], inplace=True)
-        success = True
         for header in PercentiledIVHeader:
             percentiles = q_dfs[header].get(symbol)
-            if percentiles is None:
-                success = False
-                break
-            symbol_df[header + '_rank'] = symbol_df.apply(
-                lambda row: get_percentile_rank(percentiles, row[header]),
-                axis=1)
-        if not success:
-            continue
+            if percentiles is not None:
+                symbol_df[header + '_rank'] = symbol_df.apply(
+                    lambda row: get_percentile_rank(percentiles, row[header]),
+                    axis=1)
+            else:
+                symbol_df[header + '_rank'] = np.nan
         symbol_df = symbol_df[TargetHeader]
         symbol_df = symbol_df.sort_values(by=['date'], ascending=[False])
         symbol_df.to_csv(get_quandl_path(f"option_iv_rank_by_symbols/{symbol}.csv"), index=False)

@@ -1,3 +1,4 @@
+import time
 from datetime import datetime
 import numpy as np
 import pandas as pd
@@ -150,6 +151,7 @@ def process_option_data(symbol, folder, file_name, today):
     put_max_time_value_df = pd.DataFrame(columns=["days", "value", "impliedVolatility", 'volume', 'openInterest', 'ba_spread'])
 
     for date_str in ticker.options:
+        time.sleep(0.2)
         opt_chain = ticker.option_chain(date_str)
 
         call_df = process_option(opt_chain.calls, current_price, True, today)
