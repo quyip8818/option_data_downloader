@@ -1,24 +1,8 @@
 import time
-
 import pandas as pd
-import yfinance as yf
 
-from src.symbols import symbols
-from src.utils.path_utils import get_raw_path, get_root_path, get_latest_date, get_quandl_path, get_data_path
-
-
-def localize_date(date):
-    if date.tz is None:
-        date = date.tz_localize('UTC')
-    return date.tz_convert('US/Eastern').date.astype(str)
-
-
-def get_earning_data(symbol):
-    ticker = yf.Ticker(symbol)
-    df = ticker.get_earnings_dates(limit=100)
-    df = df[df['Reported EPS'].notna()]
-    date= localize_date(df.index)
-    return '|'.join(date)
+from src.utils.path_utils import get_latest_date, get_quandl_path, get_data_path
+from src.utils.yf_utils import get_earning_data
 
 
 def refresh_finance_report_dates():
@@ -36,7 +20,7 @@ def refresh_finance_report_dates():
                 print(e)
                 print('---------')
             finally:
-                time.sleep(0.2)
+                time.sleep(0.3)
 
 
 
