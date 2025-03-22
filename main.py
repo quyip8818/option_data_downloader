@@ -10,5 +10,5 @@ today = get_last_workday(datetime.date.today())
 
 SKIP_SYMBOLS = {}
 
-# fetch_option_percentiles(today)
-fetch_all_yf_options(today, get_last_iv_rank(), SKIP_SYMBOLS)
+fetch_option_percentiles(today)
+# fetch_all_yf_options(today, get_last_iv_rank(), SKIP_SYMBOLS)

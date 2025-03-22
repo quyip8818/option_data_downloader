@@ -4,10 +4,9 @@ from time import sleep
 import numpy as np
 import pandas as pd
 
-from src.quandl.headers import IvMeanHeaders, IvCallHeaders, IvPutHeaders, PercentiledIVHeader
-from src.utils.path_utils import get_quandl_option_iv_raw_path, \
-    get_quandl_option_iv_rank_path, get_quandl_option_iv_rank_latest, get_raw_path, get_quandl_path, \
-    get_iv_percentiles_by_symbol_path, get_iv_percentiles_by_header
+from src.quandl.headers import PercentiledIVHeader
+from src.utils.path_utils import  get_quandl_option_iv_rank_latest, get_raw_path, \
+    get_quandl_path, get_data_path
 from src.utils.idx_utils import get_percentile_rank
 from src.utils.download_utils import download_file, get_quandl_last_day_iv_url
 
@@ -18,7 +17,7 @@ def find_percentiles(df, header):
     if values_s is None:
         return  None
     values_s = values_s.dropna()
-    percentiles_df = pd.read_csv(get_iv_percentiles_by_header(header))
+    percentiles_df = pd.read_csv(get_data_path(f'iv_percentiles_headers/{header}.csv'))
     percentiles_df.set_index('percentiles', inplace=True)
     symbol_ranks = {}
     for symbol, value in values_s.items():
@@ -60,7 +59,7 @@ def fetch_option_percentiles(date):
     date_str = date.strftime("%Y-%m-%d")
     date_path = date.strftime("%Y_%m_%d")
     url = get_quandl_last_day_iv_url(date_str)
-    raw_file_name =get_quandl_option_iv_raw_path(date_path)
+    raw_file_name =get_quandl_path(f'option_iv_raw/{date_path}.csv')
     if os.path.exists(raw_file_name) and not pd.read_csv(raw_file_name).empty:
         return False
     download_file(url, raw_file_name)
@@ -68,7 +67,7 @@ def fetch_option_percentiles(date):
     df = percentile_last_day_iv_rank(raw_file_name, date_str)
     if df is None:
         return False
-    df.to_csv(get_quandl_option_iv_rank_path(date_path), index=True, index_label='symbol')
+    df.to_csv(get_quandl_path(f'option_iv_rank/{date_path}.csv'), index=True, index_label='symbol')
     for symbol, row in df.iterrows():
         if symbol == 'nan':
             continue
@@ -93,10 +92,10 @@ def fetch_option_percentiles(date):
 def quantiles_all_iv():
     q_dfs = {}
     for header in PercentiledIVHeader:
-        q_dfs[header] = pd.read_csv(get_iv_percentiles_by_header(header))
+        q_dfs[header] = pd.read_csv(get_data_path(f'iv_percentiles_headers/{header}.csv'))
         q_dfs[header].set_index('percentiles', inplace=True)
 
-    df = pd.read_csv(get_raw_path(f"all_iv.csv"),
+    df = pd.read_csv(get_raw_path(f"iv_all.csv"),
                      usecols=['ticker', 'date'] + PercentiledIVHeader)
     df.rename(columns={'ticker': 'symbol'}, inplace=True)
     df.dropna(inplace=True)

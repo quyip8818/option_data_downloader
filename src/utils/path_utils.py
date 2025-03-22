@@ -10,13 +10,8 @@ root_dir = Path(__file__).resolve().parents[
 def get_quandl_path(folder):
     return f'{root_dir}/quandl/{folder}'
 
-
-def get_quandl_option_iv_raw_path(date):
-    return f'{root_dir}/quandl/option_iv_raw/{date}.csv'
-
-
-def get_quandl_option_iv_rank_path(date):
-    return f'{root_dir}/quandl/option_iv_rank/{date}.csv'
+def get_data_path(folder):
+    return f'{root_dir}/data/{folder}'
 
 
 def get_quandl_option_iv_rank_latest():
@@ -24,15 +19,7 @@ def get_quandl_option_iv_rank_latest():
     dates = [f.lower().replace('.csv', '') for f in os.listdir(folder) if os.path.isfile(os.path.join(folder, f))]
     dates = [d for d in dates if len(d) == 10]
     last_date = sorted(dates)[-1]
-    return get_quandl_option_iv_rank_path(last_date)
-
-
-def get_iv_percentiles_by_header(header):
-    return f'{root_dir}/data/iv_percentiles_headers/{header}.csv'
-
-
-def get_iv_percentiles_by_symbol_path(symbol):
-    return f'{root_dir}/data/iv_percentiles_symbols/{symbol}.csv'
+    return get_quandl_path(f'option_iv_rank/{last_date}.csv')
 
 
 def get_raw_path(file):

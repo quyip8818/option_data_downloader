@@ -13,6 +13,7 @@ def get_symbols(str):
     return sorted([w.strip() for w in re.split(r'[\s,]+', str)])
 
 if __name__ == "__main__":
-    for symbol in get_symbols("""VRTX,UBER,ABNB"""):
+    for symbol in get_symbols("""TGTX
+ZS"""):
         read_iv_rank(symbol)
         sleep(0.1)
