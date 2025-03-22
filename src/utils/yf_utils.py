@@ -2,13 +2,15 @@ from time import sleep
 
 import yfinance as yf
 
-def get_current_price(symbol):
+def get_stock_info(symbol):
     try:
-        print(f'get_price {symbol}')
+        print(f'yf stock info: {symbol}')
+        sleep(0.1)
         ticker = yf.Ticker(symbol)
-        current_price = ticker.fast_info["lastPrice"]
-        sleep(0.2)
-        return current_price
+        info = ticker.fast_info
+        current_price = info["lastPrice"]
+        market_cap = info["marketCap"]
+        return current_price, market_cap
     except Exception as e:
         if 'Rate limited' in e.args[0]:
             sleep(1)
@@ -28,9 +30,3 @@ def get_earning_data(symbol):
     df = df[df['Reported EPS'].notna()]
     date= localize_date(df.index)
     return '|'.join(date)
-
-
-if __name__ == "__main__":
-    get_prices(["ADMA", "ALNY", "BZQ", "FENC", "FITE", "FWONA", "MSGE",
-     "MUX", "NIC", "QLYS", "RDUS", "RLX", "SKLZ", "SKYU",
-     "TARS", "TGTX", "VRNA", "WBD", "XP"])

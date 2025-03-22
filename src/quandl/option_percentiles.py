@@ -9,7 +9,7 @@ from src.quandl.headers import PercentiledIVHeader
 from src.utils.path_utils import get_raw_path, get_quandl_path, get_data_path, get_latest_date, get_root_path
 from src.utils.idx_utils import get_percentile_rank
 from src.utils.download_utils import download_file, get_quandl_last_day_iv_url
-from src.utils.yf_utils import get_current_price
+from src.utils.yf_utils import get_stock_info
 
 TargetHeader = ['date'] + [h for header in PercentiledIVHeader for h in (header, f"{header}_rank")]
 
@@ -68,7 +68,7 @@ def fetch_option_percentiles(date):
     df = percentile_last_day_iv_rank(raw_file_name, date_str)
     if df is None:
         return False
-    fillin_finance_report_date(df, date)
+    df = fillin_finance_report_date(df, date)
 
     df.to_csv(get_quandl_path(f'option_iv_rank/{date_path}.csv'), index=True, index_label='symbol')
     for symbol, row in df.iterrows():
@@ -121,12 +121,12 @@ def quantiles_all_iv():
 
 def get_next_report_days(date, rep_dates):
     if rep_dates is None:
-        return None
+        return None, None
     for rep_date in rep_dates:
         next_report_days = (rep_date - date).days
         if next_report_days >= 0:
-            return next_report_days
-    return None
+            return next_report_days, rep_date
+    return None, None
 
 
 def get_pass_report_days(date, rep_dates):
@@ -148,11 +148,11 @@ def fillin_finance_report_date(df, date):
     reports = report_df.set_index('symbol')['date'].to_dict()
     for symbol in reports:
         reports[symbol] = pd.to_datetime(sorted(reports[symbol].split('|')), format='%Y-%m-%d')
-    # df['next_report_days'] = df.apply(lambda r: get_next_report_days(date, reports.get(r.name)), axis=1)
+    df[['next_report_days', 'next_report_date']] = df.apply(lambda r: pd.Series(get_next_report_days(date, reports.get(r.name))), axis=1)
     df['pass_report_days'] = df.apply(lambda r: get_pass_report_days(date, reports.get(r.name)), axis=1)
-    df['current_price'] = df.apply(lambda r: get_current_price(r.name), axis=1)
+    df[['current_price', 'market_cap']] = df.apply(lambda r: pd.Series(get_stock_info(r.name)), axis=1)
 
-    return df[['pass_report_days', 'current_price'] + current_headers]
+    return df[['pass_report_days', 'next_report_days', 'next_report_date', 'current_price', 'market_cap'] + current_headers]
 
 
 if __name__ == '__main__':
