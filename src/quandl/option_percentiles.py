@@ -5,8 +5,7 @@ import numpy as np
 import pandas as pd
 
 from src.quandl.headers import PercentiledIVHeader
-from src.utils.path_utils import  get_quandl_option_iv_rank_latest, get_raw_path, \
-    get_quandl_path, get_data_path
+from src.utils.path_utils import get_raw_path, get_quandl_path, get_data_path, get_latest_date
 from src.utils.idx_utils import get_percentile_rank
 from src.utils.download_utils import download_file, get_quandl_last_day_iv_url
 
@@ -31,7 +30,8 @@ def find_percentiles(df, header):
 
 
 def get_last_iv_rank():
-    df = pd.read_csv(get_quandl_option_iv_rank_latest())
+    last_csv_name = get_latest_date(get_quandl_path('option_iv_rank'))
+    df = pd.read_csv(get_quandl_path(f'option_iv_rank/{last_csv_name}.csv'))
     df.set_index('symbol', inplace=True)
     return df
 
