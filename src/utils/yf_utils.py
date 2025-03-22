@@ -1,14 +1,19 @@
+from time import sleep
+
 import yfinance as yf
 
-def get_prices(symbols):
-    tickers = yf.Ticker(" ".join(symbols))
-    for symbol in symbols:
-        try:
-            print(tickers.ticker)
-            # price = tickers.ticker[symbol].fast_info['last_price']
-            # print(f"{symbol}: ${price:.2f}")
-        except KeyError:
-            print(f"{symbol}: Price not available")
+def get_current_price(symbol):
+    try:
+        print(f'get_price {symbol}')
+        ticker = yf.Ticker(symbol)
+        current_price = ticker.fast_info["lastPrice"]
+        sleep(0.2)
+        return current_price
+    except Exception as e:
+        if 'Rate limited' in e.args[0]:
+            sleep(1)
+            raise e
+        return None
 
 
 def localize_date(date):

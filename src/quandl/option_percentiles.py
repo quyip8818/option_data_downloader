@@ -1,3 +1,4 @@
+import datetime
 import os
 from time import sleep
 
@@ -5,9 +6,10 @@ import numpy as np
 import pandas as pd
 
 from src.quandl.headers import PercentiledIVHeader
-from src.utils.path_utils import get_raw_path, get_quandl_path, get_data_path, get_latest_date
+from src.utils.path_utils import get_raw_path, get_quandl_path, get_data_path, get_latest_date, get_root_path
 from src.utils.idx_utils import get_percentile_rank
 from src.utils.download_utils import download_file, get_quandl_last_day_iv_url
+from src.utils.yf_utils import get_current_price
 
 TargetHeader = ['date'] + [h for header in PercentiledIVHeader for h in (header, f"{header}_rank")]
 
@@ -60,13 +62,14 @@ def fetch_option_percentiles(date):
     date_path = date.strftime("%Y_%m_%d")
     url = get_quandl_last_day_iv_url(date_str)
     raw_file_name =get_quandl_path(f'option_iv_raw/{date_path}.csv')
-    if os.path.exists(raw_file_name) and not pd.read_csv(raw_file_name).empty:
-        return False
-    download_file(url, raw_file_name)
-    sleep(1)
+    if not os.path.exists(raw_file_name) or pd.read_csv(raw_file_name).empty:
+        download_file(url, raw_file_name)
+        sleep(1)
     df = percentile_last_day_iv_rank(raw_file_name, date_str)
     if df is None:
         return False
+    fillin_finance_report_date(df, date)
+
     df.to_csv(get_quandl_path(f'option_iv_rank/{date_path}.csv'), index=True, index_label='symbol')
     for symbol, row in df.iterrows():
         if symbol == 'nan':
@@ -116,5 +119,42 @@ def quantiles_all_iv():
         symbol_df.to_csv(get_quandl_path(f"option_iv_rank_by_symbols/{symbol}.csv"), index=False)
 
 
+def get_next_report_days(date, rep_dates):
+    if rep_dates is None:
+        return None
+    for rep_date in rep_dates:
+        next_report_days = (rep_date - date).days
+        if next_report_days >= 0:
+            return next_report_days
+    return None
+
+
+def get_pass_report_days(date, rep_dates):
+    if rep_dates is None:
+        return None
+    for rep_date in reversed(rep_dates):
+        pass_report_days = (date - rep_date).days
+        if pass_report_days >= 0:
+            return pass_report_days
+    return None
+
+
+def fillin_finance_report_date(df, date):
+    current_headers = df.columns.tolist()
+
+    date = pd.Timestamp(date)
+    report_df = pd.read_csv(get_root_path(f"data/financeReportDate.csv"))
+    report_df.dropna(subset=['date'], inplace=True)
+    reports = report_df.set_index('symbol')['date'].to_dict()
+    for symbol in reports:
+        reports[symbol] = pd.to_datetime(sorted(reports[symbol].split('|')), format='%Y-%m-%d')
+    # df['next_report_days'] = df.apply(lambda r: get_next_report_days(date, reports.get(r.name)), axis=1)
+    df['pass_report_days'] = df.apply(lambda r: get_pass_report_days(date, reports.get(r.name)), axis=1)
+    df['current_price'] = df.apply(lambda r: get_current_price(r.name), axis=1)
+
+    return df[['pass_report_days', 'current_price'] + current_headers]
+
+
 if __name__ == '__main__':
-    quantiles_all_iv()
+    fetch_option_percentiles(datetime.date(2025, 3, 21))
+

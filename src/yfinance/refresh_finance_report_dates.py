@@ -10,6 +10,7 @@ def refresh_finance_report_dates():
     df = pd.read_csv(get_quandl_path(f'option_iv_raw/{last_csv_name}.csv'))
     symbols = sorted(df['ticker'].astype(str).unique())
     with open(get_data_path('financeReportDate.csv'), "w") as file:
+        file.write('symbol,date\n')
         for symbol in symbols:
             try:
                 data_str = get_earning_data(symbol)
