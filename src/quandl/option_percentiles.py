@@ -143,7 +143,7 @@ def fillin_finance_report_date(df, date):
     current_headers = df.columns.tolist()
 
     date = pd.Timestamp(date)
-    report_df = pd.read_csv(get_root_path(f"data/financeReportDate.csv"))
+    report_df = pd.read_csv(get_data_path(f"financeReportDate.csv"))
     report_df.dropna(subset=['date'], inplace=True)
     reports = report_df.set_index('symbol')['date'].to_dict()
     for symbol in reports:
