@@ -156,5 +156,6 @@ def fillin_finance_report_date(df, date):
 
 
 if __name__ == '__main__':
-    fetch_option_percentiles(datetime.date(2025, 3, 21))
+    # fetch_option_percentiles(datetime.date(2025, 3, 21))
+    quantiles_all_iv()
 

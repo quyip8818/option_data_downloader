@@ -1,5 +1,5 @@
 def get_ba_spread(bid, ask):
-    return (ask - bid) / (ask + bid)
+    return (ask - bid) / ((ask + bid) / 2)
 
 
 # Out of money if > 0, In money < 0

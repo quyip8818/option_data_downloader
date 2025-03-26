@@ -14,7 +14,7 @@ def get_quandl_path(folder):
     return f'{root_dir}/quandl/{folder}'
 
 def get_data_path(folder):
-    return f'{root_dir}/data/{folder}'
+    return f'{root_dir}/../option_data/{folder}'
 
 def get_raw_path(file):
     return f'{root_dir}/raw/{file}'

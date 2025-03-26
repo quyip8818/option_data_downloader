@@ -5,7 +5,7 @@ import yfinance as yf
 def get_stock_info(symbol):
     try:
         print(f'yf stock info: {symbol}')
-        sleep(0.1)
+        sleep(0.5)
         ticker = yf.Ticker(symbol)
         info = ticker.fast_info
         current_price = info["lastPrice"]
