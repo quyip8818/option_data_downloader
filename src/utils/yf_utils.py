@@ -15,7 +15,7 @@ def get_stock_info(symbol):
         if 'Rate limited' in e.args[0]:
             sleep(1)
             raise e
-        return None
+        return None, None
 
 
 def localize_date(date):

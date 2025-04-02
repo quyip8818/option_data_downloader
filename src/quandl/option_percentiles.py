@@ -1,4 +1,3 @@
-import datetime
 import os
 from time import sleep
 
@@ -56,10 +55,40 @@ def percentile_last_day_iv_rank(raw_file_name, date_str):
     return all_df
 
 
+def fillin_market_data(path, date):
+    if os.path.exists(path):
+        df = pd.read_csv(path)
+
+    for idx in range(len(df)):
+        if pd.notna(df.loc[idx, 'current_price']):
+            continue
+        df['market_cap'] = np.nan
+        symbol = df.loc[idx, 'symbol']
+        try:
+            current_price, market_cap = get_stock_info(symbol)
+            df.loc[idx, 'current_price'] = current_price
+            df.loc[idx, 'market_cap'] = market_cap
+
+            if (idx + 1) % 10 == 0:
+                df.to_csv(path, index=False)
+                print(f"save to {symbol}")
+
+        except Exception as e:
+            print(f"processing {symbol} with error：{e}")
+            df.to_csv(path, index=False)
+            break
+    df.to_csv(path, index=False)
+    print(f"processed all symbols")
+
 
 def fetch_option_percentiles(date):
     date_str = date.strftime("%Y-%m-%d")
     date_path = date.strftime("%Y_%m_%d")
+    iv_rank_final_path = get_quandl_path(f'option_iv_rank/{date_path}.csv')
+    if os.path.exists(iv_rank_final_path):
+        fillin_market_data(iv_rank_final_path, date)
+        return
+
     url = get_quandl_last_day_iv_url(date_str)
     raw_file_name =get_quandl_path(f'option_iv_raw/{date_path}.csv')
     if not os.path.exists(raw_file_name) or pd.read_csv(raw_file_name).empty:
@@ -70,7 +99,7 @@ def fetch_option_percentiles(date):
         return False
     df = fillin_finance_report_date(df, date)
 
-    df.to_csv(get_quandl_path(f'option_iv_rank/{date_path}.csv'), index=True, index_label='symbol')
+    df.to_csv(iv_rank_final_path, index=True, index_label='symbol')
     for symbol, row in df.iterrows():
         if symbol == 'nan':
             continue
@@ -90,6 +119,7 @@ def fetch_option_percentiles(date):
         else:
             df = row_df
         df.to_csv(symbol_file_path, index=False)
+    fillin_market_data(iv_rank_final_path, date)
 
 
 def quantiles_all_iv():
@@ -150,7 +180,8 @@ def fillin_finance_report_date(df, date):
         reports[symbol] = pd.to_datetime(sorted(reports[symbol].split('|')), format='%Y-%m-%d')
     df[['next_report_days', 'next_report_date']] = df.apply(lambda r: pd.Series(get_next_report_days(date, reports.get(r.name))), axis=1)
     df['pass_report_days'] = df.apply(lambda r: get_pass_report_days(date, reports.get(r.name)), axis=1)
-    df[['current_price', 'market_cap']] = df.apply(lambda r: pd.Series(get_stock_info(r.name)), axis=1)
+    df['current_price'] = np.nan
+    df['market_cap'] = np.nan
 
     return df[['pass_report_days', 'next_report_days', 'next_report_date', 'current_price', 'market_cap'] + current_headers]
 
