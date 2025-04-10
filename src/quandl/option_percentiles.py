@@ -128,7 +128,7 @@ def quantiles_all_iv():
         q_dfs[header] = pd.read_csv(get_data_path(f'iv_percentiles_headers/{header}.csv'))
         q_dfs[header].set_index('percentiles', inplace=True)
 
-    df = pd.read_csv(get_raw_path(f"iv_all.csv"),
+    df = pd.read_csv(get_data_path(f"iv_all.csv"),
                      usecols=['ticker', 'date'] + PercentiledIVHeader)
     df.rename(columns={'ticker': 'symbol'}, inplace=True)
     df.dropna(inplace=True)
