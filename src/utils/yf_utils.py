@@ -5,9 +5,9 @@ import yfinance as yf
 def get_stock_info(symbol):
     try:
         print(f'yf stock info: {symbol}')
-        sleep(0.5)
         ticker = yf.Ticker(symbol)
         info = ticker.fast_info
+        sleep(0.5)
         current_price = info["lastPrice"]
         market_cap = info["marketCap"]
         return current_price, market_cap
