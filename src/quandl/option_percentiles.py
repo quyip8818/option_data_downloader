@@ -97,6 +97,9 @@ def fetch_option_percentiles(date):
     df = percentile_last_day_iv_rank(raw_file_name, date_str)
     if df is None:
         return False
+    expiry_date_df = pd.read_csv(get_root_path(f'finance/expiry_dates.csv'))
+    expiry_date_df.set_index('symbol', inplace=True)
+    df = pd.merge(df, expiry_date_df, left_index=True, right_index=True, how='left')
     df = fillin_finance_report_date(df, date)
 
     df.to_csv(iv_rank_final_path, index=True, index_label='symbol')
