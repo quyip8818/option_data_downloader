@@ -2,12 +2,8 @@ import time
 import webbrowser
 
 symbol_str = """
-ARGX
-ZM
-ITGR
-ALRM
-HALO
-EEMV"""
+DFIN YELP PBH
+"""
 
 symbols = [s.strip() for s in symbol_str.split()]
 

@@ -16,6 +16,6 @@ if __name__ == "__main__":
     latest_date = get_latest_date(get_quandl_path('option_iv_rank'))
     open_file_in_application(get_quandl_path(f"option_iv_rank/{latest_date}.csv"))
     sleep(0.2)
-    for symbol in get_symbols("""INSM SGI SLNO ZM ADSK DBX PDD RBLX"""):
+    for symbol in get_symbols("""DFIN YELP PBH"""):
         read_iv_rank(symbol)
         sleep(0.2)
