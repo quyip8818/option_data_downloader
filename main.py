@@ -3,7 +3,7 @@ import datetime
 from src.quandl.option_percentiles import fetch_option_percentiles
 from src.utils.date_utils import get_last_workday
 
-today = datetime.date(2025, 5, 28)
+today = datetime.date(2025, 5, 29)
 # today = get_last_workday(datetime.date.today())
 
 SKIP_SYMBOLS = {}
