@@ -93,6 +93,7 @@ def fillin_market_data(path, date):
 def fetch_option_percentiles(date):
     date_str = date.strftime("%Y-%m-%d")
     date_path = date.strftime("%Y_%m_%d")
+    print(f"start processing {date_str}")
     iv_rank_final_path = get_quandl_path(f"option_iv_rank/{date_path}.csv")
     if os.path.exists(iv_rank_final_path):
         fillin_market_data(iv_rank_final_path, date)
