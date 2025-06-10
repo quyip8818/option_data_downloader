@@ -1,11 +1,11 @@
-pandas~=2.2.3
-yfinance~=0.2.54
+pandas
+numpy
+yfinance
 openpyxl
 
-numpy~=2.2.3
-pytz~=2025.1
-requests-html~=0.10.0
-lxml_html_clean~=0.4.1
-requests~=2.32.3
+pytz
+requests-html
+lxml_html_clean
+requests
 pyarrow
 
