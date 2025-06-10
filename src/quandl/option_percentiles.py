@@ -100,7 +100,9 @@ def fetch_option_percentiles(date):
         return
 
     url = get_quandl_last_day_iv_url(date_str)
-    raw_file_name = get_quandl_path(f"option_iv_raw/{date_path}.csv")
+    raw_folder = get_quandl_path(f"option_iv_raw")
+    os.makedirs(raw_folder, exist_ok=True)
+    raw_file_name = f"{raw_folder}/{date_path}.csv"
     if not os.path.exists(raw_file_name) or pd.read_csv(raw_file_name).empty:
         download_file(url, raw_file_name)
         sleep(1)
