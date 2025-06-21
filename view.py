@@ -12,7 +12,7 @@ def get_symbols(line: str) -> list[str]:
 if __name__ == "__main__":
     latest_date = get_latest_date(get_quandl_path("option_iv_rank"))
     open_file_in_application(get_quandl_path(f"option_iv_rank/{latest_date}.csv"))
-    sleep(0.2)
-    for symbol in get_symbols("""ADSK DBX ICLN INSM PDD X ZM"""):
+    sleep(1)
+    for symbol in get_symbols("""ADSK CPNG DBX ICLN INCY INSM PDD WB X ZM"""):
         open_file_in_application(get_quandl_path(f"option_iv_rank_by_symbols/{symbol}.csv"))
         sleep(0.2)
